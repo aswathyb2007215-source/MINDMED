@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Clinical Wellbeing Summary — MINDMED{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 920px; margin: 0 auto 1.5rem auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--slate-900);">Clinical & Provider Summary</h1>
+    <p style="font-size: 0.88rem; color: var(--slate-500);">Formatted report for discussions with qualified healthcare providers.</p>
+  </div>
+  <div style="display: flex; gap: 0.6rem;">
+    <button onclick="window.print()" class="btn btn-secondary no-print">🖨️ Print / Save as PDF</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary no-print">Return to Dashboard</a>
+  </div>
+</div>
+
+<div class="summary-sheet">
+
+  <!-- Document Header -->
+  <div class="summary-header">
+    <div class="summary-brand">
+      <h2>MINDMED</h2>
+      <div style="font-size: 0.82rem; font-weight: 700; color: var(--slate-500); letter-spacing: 0.5px;">
+        PERSONALIZED WELLBEING & PATTERN DETECTION SUMMARY
+      </div>
+      <div style="font-size: 0.78rem; color: var(--slate-400); margin-top: 0.25rem;">
+        Generated: {{ generated_at }}
+      </div>
+    </div>
+
+    <!-- Consent Status Banner -->
+    <div>
+      {% if consent and consent['share_summary'] %}
+        <div class="badge badge-low" style="padding: 0.5rem 0.9rem; font-size: 0.85rem;">
+          ✓ Authorized for Healthcare Provider Sharing
+        </div>
+      {% else %}
+        <div class="badge badge-high" style="padding: 0.5rem 0.9rem; font-size: 0.85rem;">
+          🔒 Sharing Restricted by Patient
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if not consent or not consent['share_summary'] %}
+    <div class="alert alert-warning" style="margin-bottom: 2rem;">
+      <strong>Notice:</strong> The user has currently disabled summary sharing with external healthcare providers in their privacy settings. 
+      This preview is displayed only to the authenticated account owner.
+    </div>
+  {% endif %}
+
+  <!-- Patient Demographics Section -->
+  <div class="summary-patient-grid">
+    <div class="patient-field">
+      <span class="patient-field-label">Patient / User Name</span>
+      <span class="patient-field-val">{{ user['name'] }}</span>
+    </div>
+    <div class="patient-field">
+      <span class="patient-field-label">Age / Gender</span>
+      <span class="patient-field-val">{{ user['age'] or 'Not specified' }} / {{ user['gender'] or 'Not specified' }}</span>
+    </div>
+    <div class="patient-field">
+      <span class="patient-field-label">Location</span>
+      <span class="patient-field-val">{{ user['location'] or 'Not specified' }}</span>
+    </div>
+  </div>
+
+  {% if not assessment %}
+    <div style="text-align: center; padding: 3rem 1rem;">
+      <p style="color: var(--slate-500); font-size: 1rem; margin-bottom: 1rem;">No assessment records are on file to compile a summary report.</p>
+      <a href="{{ url_for('assessment') }}" class="btn btn-primary no-print">Complete Wellbeing Check</a>
+    </div>
+  {% else %}
+
+    <!-- Assessment Metadata -->
+    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--slate-600); border-bottom: 1px solid var(--slate-200); padding-bottom: 0.6rem;">
+      <span><strong>Evaluation Date:</strong> {{ assessment['created_at'][:16] }}</span>
+      <span><strong>Methodology:</strong> Standardized Non-Diagnostic Self-Report Matrix</span>
+    </div>
+
+    <!-- Core Metrics & Baseline Comparison Table -->
+    <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.75rem;">
+      1. Core Wellbeing Metrics vs. Established Baseline
+    </h3>
+
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Wellbeing Dimension</th>
+          <th>Current Score (1-5)</th>
+          <th>Patient Baseline</th>
+          <th>Delta Shift</th>
+          <th>Observed Pattern Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Stress Load</strong></td>
+          <td>{{ assessment['stress'] }} / 5</td>
+          <td>{{ baseline['stress_baseline']|round(1) if baseline and baseline['stress_baseline'] else 'N/A' }} / 5</td>
+          <td>
+            {% if baseline and baseline['stress_baseline'] %}
+              {% set d = assessment['stress'] - baseline['stress_baseline'] %}
+              <span class="badge {% if d > 0.5 %}badge-high{% elif d < -0.5 %}badge-low{% else %}badge-neutral{% endif %}">
+                {{ "+%.1f"|format(d) if d > 0 else "%.1f"|format(d) }}
+              </span>
+            {% else %}N/A{% endif %}
+          </td>
+          <td>
+            {% if baseline and baseline['stress_baseline'] %}
+              {% if assessment['stress'] - baseline['stress_baseline'] >= 1 %}
+                Responses show elevated stress load compared with recent baseline.
+              {% else %}
+                Within typical personal variance.
+              {% endif %}
+            {% else %}First record.{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Mood & Emotional Tone</strong></td>
+          <td>{{ assessment['mood'] }} / 5</td>
+          <td>{{ baseline['mood_baseline']|round(1) if baseline and baseline['mood_baseline'] else 'N/A' }} / 5</td>
+          <td>
+            {% if baseline and baseline['mood_baseline'] %}
+              {% set d = assessment['mood'] - baseline['mood_baseline'] %}
+              <span class="badge {% if d < -0.5 %}badge-moderate{% elif d > 0.5 %}badge-low{% else %}badge-neutral{% endif %}">
+                {{ "+%.1f"|format(d) if d > 0 else "%.1f"|format(d) }}
+              </span>
+            {% else %}N/A{% endif %}
+          </td>
+          <td>
+            {% if baseline and baseline['mood_baseline'] %}
+              {% if baseline['mood_baseline'] - assessment['mood'] >= 1 %}
+                Recent responses indicate lower positive affect than established norm.
+              {% else %}
+                Stable emotional baseline.
+              {% endif %}
+            {% else %}First record.{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Sleep Restoration</strong></td>
+          <td>{{ assessment['sleep'] }} / 5</td>
+          <td>{{ baseline['sleep_baseline']|round(1) if baseline and baseline['sleep_baseline'] else 'N/A' }} / 5</td>
+          <td>
+            {% if baseline and baseline['sleep_baseline'] %}
+              {% set d = assessment['sleep'] - baseline['sleep_baseline'] %}
+              <span class="badge {% if d < -0.5 %}badge-high{% elif d > 0.5 %}badge-low{% else %}badge-neutral{% endif %}">
+                {{ "+%.1f"|format(d) if d > 0 else "%.1f"|format(d) }}
+              </span>
+            {% else %}N/A{% endif %}
+          </td>
+          <td>
+            {% if baseline and baseline['sleep_baseline'] %}
+              {% if baseline['sleep_baseline'] - assessment['sleep'] >= 1 %}
+                Sleep restorative quality is lower than patient's usual baseline.
+              {% else %}
+                Sleep architecture consistent with baseline.
+              {% endif %}
+            {% else %}First record.{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Daily Vitality & Energy</strong></td>
+          <td>{{ assessment['energy'] }} / 5</td>
+          <td>{{ baseline['energy_baseline']|round(1) if baseline and baseline['energy_baseline'] else 'N/A' }} / 5</td>
+          <td>
+            {% if baseline and baseline['energy_baseline'] %}
+              {% set d = assessment['energy'] - baseline['energy_baseline'] %}
+              <span class="badge {% if d < -0.5 %}badge-moderate{% elif d > 0.5 %}badge-low{% else %}badge-neutral{% endif %}">
+                {{ "+%.1f"|format(d) if d > 0 else "%.1f"|format(d) }}
+              </span>
+            {% else %}N/A{% endif %}
+          </td>
+          <td>
+            {% if baseline and baseline['energy_baseline'] %}
+              {% if baseline['energy_baseline'] - assessment['energy'] >= 1 %}
+                Energy availability depleted compared to baseline.
+              {% else %}
+                Typical energetic capacity maintained.
+              {% endif %}
+            {% else %}First record.{% endif %}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Risk Screening Indicators Table -->
+    <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--slate-900); margin-top: 1.8rem; margin-bottom: 0.75rem;">
+      2. Specialized Screening & Risk Indication Scores
+    </h3>
+
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Screening Domain</th>
+          <th>Composite Score</th>
+          <th>Indication Level</th>
+          <th>Screening Context & Guidance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Anxiety Screening (GAD-2 style)</strong></td>
+          <td>{{ assessment['anxiety'] }} / 5</td>
+          <td>
+            <span class="badge {% if assessment['anxiety'] <= 2 %}badge-low{% elif assessment['anxiety'] == 3 %}badge-moderate{% else %}badge-high{% endif %}">
+              {% if assessment['anxiety'] <= 2 %}Low Indication{% elif assessment['anxiety'] == 3 %}Moderate Indication{% else %}Elevated Indication{% endif %}
+            </span>
+          </td>
+          <td>Self-report measures frequency of nervous tension and worry management.</td>
+        </tr>
+        <tr>
+          <td><strong>Depression-Risk Screening (PHQ-2 style)</strong></td>
+          <td>{{ assessment['depression'] }} / 5</td>
+          <td>
+            <span class="badge {% if assessment['depression'] <= 2 %}badge-low{% elif assessment['depression'] == 3 %}badge-moderate{% else %}badge-high{% endif %}">
+              {% if assessment['depression'] <= 2 %}Low Indication{% elif assessment['depression'] == 3 %}Moderate Indication{% else %}Elevated Indication{% endif %}
+            </span>
+          </td>
+          <td>Evaluates anhedonia and discouragement over recent intervals.</td>
+        </tr>
+        <tr>
+          <td><strong>Burnout & Recovery Pattern</strong></td>
+          <td>{{ assessment['burnout'] }} / 5</td>
+          <td>
+            <span class="badge {% if assessment['burnout'] <= 2 %}badge-low{% elif assessment['burnout'] == 3 %}badge-moderate{% else %}badge-high{% endif %}">
+              {% if assessment['burnout'] <= 2 %}Low Indication{% elif assessment['burnout'] == 3 %}Moderate Indication{% else %}Elevated Indication{% endif %}
+            </span>
+          </td>
+          <td>Monitors exhaustion, motivation detachment, and off-hour recovery efficacy.</td>
+        </tr>
+        <tr>
+          <td><strong>Basic Health & Somatic Factor</strong></td>
+          <td>{{ assessment['health_risk'] }} / 5</td>
+          <td>
+            <span class="badge {% if assessment['health_risk'] <= 2 %}badge-low{% elif assessment['health_risk'] == 3 %}badge-moderate{% else %}badge-high{% endif %}">
+              {% if assessment['health_risk'] <= 2 %}Low Indication{% elif assessment['health_risk'] == 3 %}Moderate Indication{% else %}Elevated Indication{% endif %}
+            </span>
+          </td>
+          <td>Screens for physical fatigue and general bodily vitality.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Early Awareness Detection in Summary -->
+    {% if early_awareness and early_awareness.triggered %}
+      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius-md); padding: 1.2rem 1.4rem; margin-top: 1.5rem;">
+        <div style="font-weight: 800; color: #92400e; font-size: 0.95rem; margin-bottom: 0.35rem;">
+          ⚠️ MindMED Early Awareness Algorithm Alert
+        </div>
+        <p style="font-size: 0.85rem; color: #78350f; line-height: 1.5; margin-bottom: 0.5rem;">
+          {{ early_awareness.pattern_message }}
+        </p>
+        <ul style="padding-left: 1.2rem; font-size: 0.82rem; color: #78350f;">
+          {% for d in early_awareness.deviations %}
+            <li><strong>{{ d.metric }}:</strong> {{ d.change }} shift from baseline</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Formal Clinical Disclaimer -->
+    <div style="margin-top: 2.2rem; padding: 1rem 1.2rem; background: var(--slate-100); border-radius: var(--radius-md); font-size: 0.8rem; color: var(--slate-600); line-height: 1.5;">
+      <strong>CLINICAL DISCLAIMER:</strong> This summary contains screening and self-reported early-awareness information only. 
+      It is <u>NOT a medical diagnosis</u> and does not replace thorough psychiatric or medical evaluation by a licensed healthcare practitioner.
+    </div>
+
+  {% endif %}
+
+</div>
+
+{% endblock %}

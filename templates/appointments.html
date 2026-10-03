@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Appointments & Booking — MINDMED{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Appointments & Specialist Connect</h1>
+  <p>Schedule a confidential consultation with a qualified mental healthcare specialist.</p>
+</div>
+
+<div class="profile-layout">
+  
+  <!-- Booking Form Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Book a New Consultation</h2>
+      <span class="badge badge-low">Instant Confirmation</span>
+    </div>
+
+    <form action="{{ url_for('appointments') }}" method="POST">
+      <div class="form-group">
+        <label class="form-label" for="professional_id">Select Healthcare Specialist *</label>
+        <select name="professional_id" id="professional_id" class="form-select" required>
+          <option value="" disabled {% if not selected_prof_id %}selected{% endif %}>Choose a doctor or counselor...</option>
+          {% for p in professionals %}
+            <option value="{{ p['id'] }}" {% if selected_prof_id|string == p['id']|string %}selected{% endif %}>
+              {{ p['name'] }} — {{ p['specialization'] }} ({{ p['location'] }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="appointment_date">Preferred Date *</label>
+          <input type="date" id="appointment_date" name="appointment_date" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="appointment_time">Time Slot *</label>
+          <select id="appointment_time" name="appointment_time" class="form-select" required>
+            <option value="" disabled selected>Select a slot</option>
+            <option value="09:00 AM">09:00 AM - 09:45 AM</option>
+            <option value="10:30 AM">10:30 AM - 11:15 AM</option>
+            <option value="11:45 AM">11:45 AM - 12:30 PM</option>
+            <option value="02:00 PM">02:00 PM - 02:45 PM</option>
+            <option value="03:30 PM">03:30 PM - 04:15 PM</option>
+            <option value="05:00 PM">05:00 PM - 05:45 PM</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="notes">Session Notes / Reason for Visit (Optional)</label>
+        <textarea id="notes" name="notes" rows="3" class="form-input" placeholder="e.g. Discussing elevated stress, sleep difficulty, or recent baseline shifts..."></textarea>
+      </div>
+
+      <div style="background: var(--slate-50); border-radius: var(--radius-sm); padding: 0.85rem 1rem; margin-bottom: 1.2rem; font-size: 0.82rem; color: var(--slate-600);">
+        🛡️ <strong>Privacy Protection:</strong> Your appointment is confidential. Your MindMED screening data will only be shared if you have authorized consent in your profile.
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        Confirm Appointment Booking
+      </button>
+    </form>
+  </div>
+
+  <!-- Booked Appointments List -->
+  <div>
+    <div class="section-header" style="margin-bottom: 1rem;">
+      <h3 class="section-title" style="font-size: 1.15rem;">Your Scheduled Sessions</h3>
+      <span class="badge badge-neutral">{{ appointments|length }} total</span>
+    </div>
+
+    {% if appointments %}
+      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        {% for appt in appointments %}
+          <div class="appointment-card">
+            <div>
+              <div style="font-weight: 700; color: var(--slate-900); font-size: 1rem; margin-bottom: 0.2rem;">
+                {{ appt['prof_name'] }}
+              </div>
+              <div style="font-size: 0.82rem; color: var(--primary); font-weight: 600; margin-bottom: 0.4rem;">
+                {{ appt['specialization'] }}
+              </div>
+              <div style="font-size: 0.82rem; color: var(--slate-600);">
+                📅 <strong>{{ appt['appointment_date'] }}</strong> at {{ appt['appointment_time'] }}
+              </div>
+              {% if appt['notes'] %}
+                <div style="font-size: 0.78rem; color: var(--slate-500); margin-top: 0.35rem; font-style: italic;">
+                  Note: "{{ appt['notes'] }}"
+                </div>
+              {% endif %}
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.6rem;">
+              <span class="badge {% if appt['status'] == 'Confirmed' %}badge-low{% else %}badge-high{% endif %}">
+                {{ appt['status'] }}
+              </span>
+
+              {% if appt['status'] == 'Confirmed' %}
+                <form action="{{ url_for('cancel_appointment', appointment_id=appt['id']) }}" method="POST" onsubmit="return confirm('Cancel this appointment?');">
+                  <button type="submit" class="btn btn-sm btn-danger" style="font-size: 0.75rem; padding: 0.2rem 0.55rem;">
+                    Cancel
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card" style="text-align: center; padding: 2.5rem 1.5rem;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🗓️</div>
+        <h4 style="color: var(--slate-800); margin-bottom: 0.3rem;">No Booked Appointments</h4>
+        <p style="font-size: 0.85rem; color: var(--slate-500);">
+          Select a provider on the left or browse verified specialists to schedule your first consultation.
+        </p>
+      </div>
+    {% endif %}
+
+    <!-- Link to Summary -->
+    <div class="card" style="margin-top: 1.5rem; background: #f0fdfa; border-color: #99f6e4;">
+      <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.3rem;">Preparing for your visit?</h4>
+      <p style="font-size: 0.82rem; color: #115e59; margin-bottom: 0.8rem; line-height: 1.45;">
+        You can generate and print a Provider-Ready Wellbeing Summary to bring to your consultation.
+      </p>
+      <a href="{{ url_for('summary') }}" class="btn btn-sm btn-primary">View Clinical Summary</a>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Set min date for appointment booking to today
+  document.addEventListener('DOMContentLoaded', () => {
+    const dateInput = document.getElementById('appointment_date');
+    if (dateInput) {
+      const today = new Date().toISOString().split('T')[0];
+      dateInput.min = today;
+      if (!dateInput.value) {
+        // default to tomorrow
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        dateInput.value = tomorrow.toISOString().split('T')[0];
+      }
+    }
+  });
+</script>
+{% endblock %}

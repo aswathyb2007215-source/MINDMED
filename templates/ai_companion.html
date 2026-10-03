@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}AI Wellbeing Companion — MINDMED{% endblock %}
+
+{% block content %}
+
+<!-- Urgent Crisis Notice Strip (Always Accessible) -->
+<div class="crisis-quick-banner" style="max-width: 900px; margin: 0 auto 1.2rem auto; background: #fff1f2; border: 1px solid #fecdd3; border-radius: var(--radius-md); padding: 0.75rem 1.2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+  <div style="display: flex; align-items: center; gap: 0.6rem;">
+    <span style="font-size: 1.1rem;">🚨</span>
+    <span style="font-size: 0.82rem; color: #9f1239; font-weight: 600;">
+      In Acute Crisis? 24/7 National Helplines: <strong>Tele-MANAS 14416</strong> | <strong>KIRAN 1800-599-0019</strong> | <strong>US 988</strong>
+    </span>
+  </div>
+  <a href="{{ url_for('professionals') }}" class="btn btn-sm btn-outline" style="color: #9f1239; border-color: #f43f5e; font-size: 0.75rem; padding: 0.25rem 0.6rem;">
+    Specialist Directory →
+  </a>
+</div>
+
+<!-- Guided Box Breathing Collapsible Drawer -->
+<div id="boxBreathingModal" class="glass-panel" style="display: none; max-width: 900px; margin: 0 auto 1.5rem auto; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; padding: 2rem; border-radius: var(--radius-lg);">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+    <div>
+      <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 0.3rem;">🧘 Guided 4-4-4-4 Box Breathing</h3>
+      <p style="font-size: 0.85rem; color: var(--slate-300); margin: 0;">
+        Follow the circle to regulate nervous tension and lower heart rate.
+      </p>
+    </div>
+    <button type="button" class="btn btn-sm btn-secondary" onclick="toggleBreathingDrawer()" style="background: rgba(255,255,255,0.15); border: none; color: white;">✕ Close</button>
+  </div>
+
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem 0;">
+    <div style="position: relative; width: 180px; height: 180px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem;">
+      <div id="companionBreathOrb" class="companion-orb">
+        <div id="companionBreathText" style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase;">Inhale</div>
+        <div id="companionBreathCount" style="font-size: 2rem; font-weight: 800;">4</div>
+      </div>
+    </div>
+    <div id="companionBreathStatus" style="font-size: 0.85rem; color: var(--slate-300); margin-bottom: 1rem;">Click Start to begin guided pacing</div>
+    <button type="button" id="companionBreathBtn" class="btn btn-primary btn-sm" onclick="toggleCompanionBreathing()">
+      <span>▶ Start Breathing Session</span>
+    </button>
+  </div>
+</div>
+
+<div class="chat-container">
+  
+  <!-- Chat Top Bar -->
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">AI</div>
+      <div>
+        <div class="chat-header-title">
+          <span class="chat-status-dot"></span>MindMED Companion
+        </div>
+        <div class="chat-header-sub">Private & Supportive Wellbeing Guide • Non-Diagnostic</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button type="button" class="btn btn-sm btn-outline" onclick="toggleBreathingDrawer()" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+        <span>🧘 Box Breathing</span>
+      </button>
+      <form action="{{ url_for('clear_chat') }}" method="POST" style="margin: 0;" onsubmit="return confirm('Clear your chat history?');">
+        <button type="submit" class="btn btn-sm btn-secondary" title="Reset chat messages">Clear Chat</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Messages History Area -->
+  <div class="chat-messages" id="chatMessages">
+    {% for msg in messages %}
+      <div class="message-bubble-row msg-{{ msg['sender'] }}">
+        <div class="msg-avatar">{{ 'MM' if msg['sender'] == 'ai' else 'You' }}</div>
+        <div style="display: flex; flex-direction: column;">
+          <div class="msg-bubble {% if msg['is_crisis'] %}msg-crisis-alert{% endif %}">{{ msg['message'] }}</div>
+          <div class="msg-time">{{ msg['created_at'] }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Suggested Quick Prompt Chips -->
+  <div class="chat-prompt-chips">
+    <button type="button" class="chip" data-prompt="I am feeling quite stressed with work.">⚡ I'm feeling stressed</button>
+    <button type="button" class="chip" data-prompt="Help me ground my senses right now.">✋ 5-4-3-2-1 Grounding</button>
+    <button type="button" class="chip" data-prompt="I have been having trouble falling asleep lately.">🌙 I can't sleep</button>
+    <button type="button" class="chip" data-prompt="I feel anxious and worried about my workload.">😰 Anxious & overwhelmed</button>
+    <button type="button" class="chip" data-prompt="I feel exhausted and burned out.">🔋 Burnout symptoms</button>
+    <button type="button" class="chip" data-prompt="Can you explain how my MindMED baseline works?">📊 Explain baseline</button>
+  </div>
+
+  <!-- Message Input Form -->
+  <form id="chatForm" class="chat-input-area">
+    <input 
+      type="text" 
+      id="chatInput" 
+      class="chat-input" 
+      placeholder="Type a message or click a prompt above... (e.g. 'I feel stressed')" 
+      autocomplete="off" 
+      required
+    >
+    <button type="submit" id="sendBtn" class="btn btn-primary">
+      Send
+    </button>
+  </form>
+
+</div>
+
+<div style="max-width: 900px; margin: 1rem auto 0 auto; text-align: center; font-size: 0.78rem; color: var(--slate-500);">
+  MindMED AI is a supportive wellbeing companion tool and does not provide medical diagnosis or psychiatric emergency response.
+</div>
+
+<style>
+.companion-orb {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2dd4bf 0%, #0d9488 60%, #0f766e 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 0 30px rgba(45, 212, 191, 0.4);
+  transition: transform 3.8s ease-in-out, box-shadow 3.8s ease-in-out;
+}
+.companion-orb.inhale {
+  transform: scale(1.4);
+  box-shadow: 0 0 50px rgba(45, 212, 191, 0.7);
+}
+.companion-orb.hold {
+  transform: scale(1.4);
+  box-shadow: 0 0 50px rgba(56, 189, 248, 0.7);
+  background: radial-gradient(circle, #38bdf8 0%, #0284c7 60%, #0369a1 100%);
+}
+.companion-orb.exhale {
+  transform: scale(0.9);
+  box-shadow: 0 0 20px rgba(45, 212, 191, 0.3);
+  background: radial-gradient(circle, #2dd4bf 0%, #0d9488 60%, #0f766e 100%);
+}
+.companion-orb.hold-empty {
+  transform: scale(0.9);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  background: radial-gradient(circle, #818cf8 0%, #6366f1 60%, #4f46e5 100%);
+}
+</style>
+
+<script>
+function toggleBreathingDrawer() {
+  const modal = document.getElementById('boxBreathingModal');
+  modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+}
+
+let companionBreathTimer = null;
+let companionPhase = 0;
+let companionSec = 4;
+let isCompBreathing = false;
+
+const cPhases = [
+  { label: 'Inhale', cls: 'inhale', text: 'Inhale slowly through your nose...' },
+  { label: 'Hold', cls: 'hold', text: 'Pause and maintain gentle stillness...' },
+  { label: 'Exhale', cls: 'exhale', text: 'Release tension slowly through your mouth...' },
+  { label: 'Hold', cls: 'hold-empty', text: 'Rest at the bottom of the breath...' }
+];
+
+function toggleCompanionBreathing() {
+  const btn = document.getElementById('companionBreathBtn');
+  const orb = document.getElementById('companionBreathOrb');
+  const text = document.getElementById('companionBreathText');
+  const count = document.getElementById('companionBreathCount');
+  const status = document.getElementById('companionBreathStatus');
+
+  if (isCompBreathing) {
+    clearInterval(companionBreathTimer);
+    isCompBreathing = false;
+    btn.innerHTML = '<span>▶ Resume Breathing</span>';
+    text.textContent = 'Paused';
+    count.textContent = '—';
+    status.textContent = 'Session paused. Click resume when you are ready.';
+    orb.className = 'companion-orb';
+  } else {
+    isCompBreathing = true;
+    btn.innerHTML = '<span>⏸ Pause Session</span>';
+    companionPhase = 0;
+    companionSec = 4;
+    runCompanionCycle();
+    companionBreathTimer = setInterval(runCompanionCycle, 1000);
+  }
+}
+
+function runCompanionCycle() {
+  const orb = document.getElementById('companionBreathOrb');
+  const text = document.getElementById('companionBreathText');
+  const count = document.getElementById('companionBreathCount');
+  const status = document.getElementById('companionBreathStatus');
+
+  count.textContent = companionSec;
+  text.textContent = cPhases[companionPhase].label;
+  status.textContent = cPhases[companionPhase].text;
+  orb.className = 'companion-orb ' + cPhases[companionPhase].cls;
+
+  companionSec--;
+  if (companionSec < 1) {
+    companionPhase = (companionPhase + 1) % 4;
+    companionSec = 4;
+  }
+}
+</script>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

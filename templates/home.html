@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block title %}MINDMED — AI HealthTech Platform | Talk. Understand. Detect. Connect.{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="home-wrapper">
+  
+  <!-- HERO SECTION -->
+  <section class="hero-section">
+    <div class="hero-glow-orb hero-glow-1"></div>
+    <div class="hero-glow-orb hero-glow-2"></div>
+    <div class="hero-content">
+      <div class="hero-badge animate-fade-in">
+        <span class="badge-dot"></span>
+        <span>Next-Generation AI HealthTech Platform</span>
+        <span class="badge-pill">v2.4 Live</span>
+      </div>
+
+      <h1 class="hero-title animate-slide-up">
+        Talk. Understand.<br>
+        <span class="gradient-text">Detect. Connect.</span>
+      </h1>
+
+      <p class="hero-subtext animate-slide-up-delay">
+        MINDMED establishes your personalized wellbeing baseline, tracks subtle cognitive & emotional shifts, provides early awareness before burnout deepens, and safely connects you with verified healthcare specialists.
+      </p>
+
+      <div class="hero-actions animate-slide-up-delay-2">
+        {% if current_user %}
+          <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg shadow-glow">
+            <span>Enter Your Dashboard</span>
+            <span class="btn-arrow">→</span>
+          </a>
+          <a href="{{ url_for('ai_companion') }}" class="btn btn-secondary btn-lg">
+            <span>💬 Talk with AI Companion</span>
+          </a>
+        {% else %}
+          <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg shadow-glow">
+            <span>Start Free Wellbeing Screening</span>
+            <span class="btn-arrow">→</span>
+          </a>
+          <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">
+            <span>Sign In to Your Space</span>
+          </a>
+          <button id="quickDemoBtn" class="btn btn-outline btn-lg" onclick="fillDemoAndLogin()">
+            <span>⚡ Instant Demo Access</span>
+          </button>
+        {% endif %}
+      </div>
+
+      <!-- Trust Metrics Strip -->
+      <div class="trust-metrics">
+        <div class="metric-item">
+          <span class="metric-num">8+</span>
+          <span class="metric-label">Screening Dimensions</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-num">&lt; 3 min</span>
+          <span class="metric-label">Baseline Setup</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-num">100%</span>
+          <span class="metric-label">Patient Consent Control</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <span class="metric-num">24/7</span>
+          <span class="metric-label">Crisis Helplines Active</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Live Hero Preview Widget -->
+    <div class="hero-preview animate-fade-in-right">
+      <div class="preview-card glass-panel">
+        <div class="preview-header">
+          <div class="preview-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="preview-title">Live Baseline Intelligence Engine</span>
+          <span class="badge badge-low" style="font-size: 0.72rem;">Encrypted & Private</span>
+        </div>
+
+        <div class="preview-body">
+          <div class="preview-meter-card">
+            <div class="meter-top">
+              <span class="meter-name">Interactive Wellbeing Teaser</span>
+              <span id="previewScoreBadge" class="badge badge-low">Balanced 82%</span>
+            </div>
+            <p class="meter-hint">Adjust sliders to see how MINDMED dynamically computes your composite resilience index:</p>
+            
+            <div class="interactive-sliders">
+              <div class="slider-row">
+                <label for="homeMoodSlider">😊 Mood & Positivity</label>
+                <input type="range" id="homeMoodSlider" min="1" max="5" value="4" class="range-slider" oninput="updateHomeScore()">
+                <span id="homeMoodVal" class="slider-val">4/5</span>
+              </div>
+              <div class="slider-row">
+                <label for="homeStressSlider">⚡ Stress Load</label>
+                <input type="range" id="homeStressSlider" min="1" max="5" value="2" class="range-slider" oninput="updateHomeScore()">
+                <span id="homeStressVal" class="slider-val">2/5</span>
+              </div>
+              <div class="slider-row">
+                <label for="homeSleepSlider">🌙 Sleep Quality</label>
+                <input type="range" id="homeSleepSlider" min="1" max="5" value="4" class="range-slider" oninput="updateHomeScore()">
+                <span id="homeSleepVal" class="slider-val">4/5</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Preview Result Box -->
+            <div id="previewInsightBox" class="preview-insight-box">
+              <div class="insight-icon">✨</div>
+              <div class="insight-text">
+                <strong id="previewInsightTitle">Healthy Somatic Rhythms</strong>
+                <p id="previewInsightDesc">Your baseline projection reflects healthy restorative sleep and manageable tension. Optimal focus capacity.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature badges -->
+          <div class="preview-features-grid">
+            <div class="p-feat">
+              <span class="p-icon">🎯</span>
+              <div>
+                <strong>Personal Baseline</strong>
+                <p>Calculates your unique norm, not generalized averages.</p>
+              </div>
+            </div>
+            <div class="p-feat">
+              <span class="p-icon">⚠️</span>
+              <div>
+                <strong>Early Warnings</strong>
+                <p>Detects shifts across 2+ markers before burnout hits.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 CORE PILLARS SECTION -->
+  <section class="section-container pillars-section">
+    <div class="section-title-wrap text-center">
+      <span class="section-tag">Four Core Pillars</span>
+      <h2 class="section-heading">How MINDMED Transforms Personal Wellbeing</h2>
+      <p class="section-desc">Designed around an empathetic, evidence-based care loop from private dialogue to certified specialist access.</p>
+    </div>
+
+    <div class="pillars-grid">
+      <!-- Pillar 1: TALK -->
+      <div class="pillar-card glass-panel hover-lift">
+        <div class="pillar-icon-wrap icon-talk">
+          <span>💬</span>
+        </div>
+        <div class="pillar-number">01 / TALK</div>
+        <h3 class="pillar-title">AI Wellbeing Companion</h3>
+        <p class="pillar-desc">
+          Safe, non-judgmental conversational partner equipped with evidence-based grounding techniques, sleep hygiene prompts, and immediate crisis safety hotline detection.
+        </p>
+        <ul class="pillar-points">
+          <li>✓ 24/7 conversational support</li>
+          <li>✓ Interactive Box Breathing & grounding</li>
+          <li>✓ Immediate crisis & Tele-MANAS alerts</li>
+        </ul>
+        <a href="{{ url_for('ai_companion') if current_user else url_for('signup') }}" class="pillar-link">
+          Explore AI Companion →
+        </a>
+      </div>
+
+      <!-- Pillar 2: UNDERSTAND -->
+      <div class="pillar-card glass-panel hover-lift">
+        <div class="pillar-icon-wrap icon-understand">
+          <span>📝</span>
+        </div>
+        <div class="pillar-number">02 / UNDERSTAND</div>
+        <h3 class="pillar-title">Multi-Dimensional Screening</h3>
+        <p class="pillar-desc">
+          Comprehensive wellness check examining emotional tone, anxiety tension (GAD screening style), low-mood patterns (PHQ style), burnout strain, and physical vitality.
+        </p>
+        <ul class="pillar-points">
+          <li>✓ Non-diagnostic evidence-based questions</li>
+          <li>✓ Explainable factor attribution breakdown</li>
+          <li>✓ Actionable daily wellness protocols</li>
+        </ul>
+        <a href="{{ url_for('assessment') if current_user else url_for('signup') }}" class="pillar-link">
+          Take Wellbeing Check →
+        </a>
+      </div>
+
+      <!-- Pillar 3: DETECT -->
+      <div class="pillar-card glass-panel hover-lift">
+        <div class="pillar-icon-wrap icon-detect">
+          <span>🛡️</span>
+        </div>
+        <div class="pillar-number">03 / DETECT</div>
+        <h3 class="pillar-title">Baseline & Early Awareness</h3>
+        <p class="pillar-desc">
+          MINDMED measures your present against your established personal baseline. When 2 or more indicators shift unfavorably, proactive alerts guide timely rest and intervention.
+        </p>
+        <ul class="pillar-points">
+          <li>✓ Dynamic baseline calibration</li>
+          <li>✓ Real-time delta deviation tracking</li>
+          <li>✓ Proactive early warnings before burnout</li>
+        </ul>
+        <a href="{{ url_for('insights') if current_user else url_for('signup') }}" class="pillar-link">
+          View Insights & Trends →
+        </a>
+      </div>
+
+      <!-- Pillar 4: CONNECT -->
+      <div class="pillar-card glass-panel hover-lift">
+        <div class="pillar-icon-wrap icon-connect">
+          <span>🩺</span>
+        </div>
+        <div class="pillar-number">04 / CONNECT</div>
+        <h3 class="pillar-title">Verified Specialists</h3>
+        <p class="pillar-desc">
+          Direct access to certified clinical psychologists, psychiatrists, and counselors with instant appointment scheduling and user-controlled privacy consent sharing.
+        </p>
+        <ul class="pillar-points">
+          <li>✓ Directory of vetted healthcare doctors</li>
+          <li>✓ Instant 1-click consultation booking</li>
+          <li>✓ Printable provider-ready clinical summary</li>
+        </ul>
+        <a href="{{ url_for('professionals') if current_user else url_for('signup') }}" class="pillar-link">
+          Find Specialists →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE GUIDED BREATHING TEASER SECTION -->
+  <section class="section-container breathing-section">
+    <div class="breathing-card glass-panel">
+      <div class="breathing-info">
+        <span class="section-tag">Instant Grounding Exercise</span>
+        <h2 class="section-heading" style="color: white; margin-bottom: 0.8rem;">
+          Try 60 Seconds of Box Breathing
+        </h2>
+        <p style="color: var(--slate-300); line-height: 1.6; margin-bottom: 1.5rem;">
+          Box breathing is clinically proven to activate the parasympathetic nervous system, lowering acute cortisol surges, stabilizing heart rate variability, and clearing mental clutter.
+        </p>
+        <div class="breathing-steps-row">
+          <div class="b-step"><span class="b-num">1</span> Inhale 4s</div>
+          <div class="b-step"><span class="b-num">2</span> Hold 4s</div>
+          <div class="b-step"><span class="b-num">3</span> Exhale 4s</div>
+          <div class="b-step"><span class="b-num">4</span> Hold 4s</div>
+        </div>
+        <div style="margin-top: 1.5rem;">
+          <button id="homeBreathToggle" class="btn btn-primary" onclick="toggleHomeBreathing()">
+            <span>▶ Start Breathing Session</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="breathing-visual-wrap">
+        <div class="breathing-orb-container">
+          <div id="homeBreathOrb" class="breathing-orb">
+            <div id="homeBreathInstruction" class="breath-text">Inhale</div>
+            <div id="homeBreathCounter" class="breath-counter">4</div>
+          </div>
+          <div class="breathing-glow-ring"></div>
+        </div>
+        <div id="homeBreathStatus" class="breath-status">Click Start to begin guided pacing</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLINICAL & SCIENTIFIC METHODOLOGY -->
+  <section class="section-container methodology-section">
+    <div class="section-title-wrap text-center">
+      <span class="section-tag">Scientific Methodology</span>
+      <h2 class="section-heading">Why Personalized Baselines Matter</h2>
+      <p class="section-desc">Traditional static tests judge everyone against a generic population average. MINDMED evaluates your changes against your unique self.</p>
+    </div>
+
+    <div class="methodology-grid">
+      <div class="method-card glass-panel">
+        <div class="method-icon">📊</div>
+        <h4>Continuous Baseline Calibration</h4>
+        <p>Your emotional resilience, sleep rhythms, and cognitive energy are deeply personal. MINDMED establishes your starting point and measures trajectory deltas.</p>
+      </div>
+
+      <div class="method-card glass-panel">
+        <div class="method-icon">🧠</div>
+        <h4>Multi-Marker Shift Detection</h4>
+        <p>Isolated fatigue is normal; combined drops across sleep restoration, emotional positivity, and stamina signal systemic overload. Our engine catches combinations early.</p>
+      </div>
+
+      <div class="method-card glass-panel">
+        <div class="method-icon">🔒</div>
+        <h4>Granular Consent Control</h4>
+        <p>You control exactly what data is shared. Generate clean clinical summaries for your therapist or keep all responses completely private with a single toggle.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="section-container cta-section">
+    <div class="cta-banner glass-panel">
+      <div class="cta-content">
+        <h2 class="cta-heading">Ready to Understand Your Wellbeing Trajectory?</h2>
+        <p class="cta-desc">
+          Take the 3-minute screening, calibrate your personal baseline, and unlock actionable guidance designed for sustainable mental vitality.
+        </p>
+        <div class="cta-btns">
+          {% if current_user %}
+            <a href="{{ url_for('assessment') }}" class="btn btn-primary btn-lg shadow-glow">
+              Take Today's Wellbeing Check →
+            </a>
+          {% else %}
+            <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg shadow-glow">
+              Get Started Now — It's Free →
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">
+              Sign In to Existing Account
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// Interactive Homepage Score Estimator
+function updateHomeScore() {
+  const mood = parseInt(document.getElementById('homeMoodSlider').value);
+  const stress = parseInt(document.getElementById('homeStressSlider').value);
+  const sleep = parseInt(document.getElementById('homeSleepSlider').value);
+
+  document.getElementById('homeMoodVal').textContent = mood + '/5';
+  document.getElementById('homeStressVal').textContent = stress + '/5';
+  document.getElementById('homeSleepVal').textContent = sleep + '/5';
+
+  // Calculate composite preview score (0 - 100)
+  // Mood (0-40 pts), Sleep (0-40 pts), Inverted Stress (0-20 pts)
+  const moodPts = ((mood - 1) / 4) * 40;
+  const sleepPts = ((sleep - 1) / 4) * 40;
+  const stressPts = ((5 - stress) / 4) * 20;
+  const score = Math.round(moodPts + sleepPts + stressPts);
+
+  const badge = document.getElementById('previewScoreBadge');
+  const title = document.getElementById('previewInsightTitle');
+  const desc = document.getElementById('previewInsightDesc');
+
+  if (score >= 75) {
+    badge.textContent = `Balanced ${score}%`;
+    badge.className = 'badge badge-low';
+    title.textContent = 'Healthy Somatic Rhythms';
+    desc.textContent = 'Your baseline projection reflects healthy restorative sleep and manageable tension. Optimal focus capacity.';
+  } else if (score >= 50) {
+    badge.textContent = `Moderate ${score}%`;
+    badge.className = 'badge badge-moderate';
+    title.textContent = 'Mild Cognitive Strain';
+    desc.textContent = 'Subtle depletion noted. A short 15-minute screen hiatus and early bedtime recommended to protect baseline reserves.';
+  } else {
+    badge.textContent = `Elevated Strain ${score}%`;
+    badge.className = 'badge badge-elevated';
+    title.textContent = 'Multi-Metric Warning Pattern';
+    desc.textContent = 'Combination of elevated stress and interrupted sleep detected. MindMED would trigger early awareness guidance here.';
+  }
+}
+
+// Guided Breathing Teaser Engine
+let breathInterval = null;
+let breathPhase = 0; // 0: Inhale, 1: Hold, 2: Exhale, 3: Hold
+let breathSec = 4;
+let isBreathingActive = false;
+
+const phases = [
+  { label: 'Inhale Deeply', cls: 'inhale', text: 'Breathe in slowly through your nose...' },
+  { label: 'Hold Breath', cls: 'hold', text: 'Pause and maintain gentle stillness...' },
+  { label: 'Exhale Slowly', cls: 'exhale', text: 'Release tension fully through your mouth...' },
+  { label: 'Hold Empty', cls: 'hold-empty', text: 'Rest at the bottom of the breath...' }
+];
+
+function toggleHomeBreathing() {
+  const btn = document.getElementById('homeBreathToggle');
+  const orb = document.getElementById('homeBreathOrb');
+  const instruction = document.getElementById('homeBreathInstruction');
+  const counter = document.getElementById('homeBreathCounter');
+  const status = document.getElementById('homeBreathStatus');
+
+  if (isBreathingActive) {
+    clearInterval(breathInterval);
+    isBreathingActive = false;
+    btn.innerHTML = '<span>▶ Resume Breathing</span>';
+    instruction.textContent = 'Paused';
+    counter.textContent = '—';
+    status.textContent = 'Session paused. Click resume when you are ready.';
+    orb.className = 'breathing-orb';
+  } else {
+    isBreathingActive = true;
+    btn.innerHTML = '<span>⏸ Pause Session</span>';
+    breathPhase = 0;
+    breathSec = 4;
+    runBreathCycle();
+    breathInterval = setInterval(runBreathCycle, 1000);
+  }
+}
+
+function runBreathCycle() {
+  const orb = document.getElementById('homeBreathOrb');
+  const instruction = document.getElementById('homeBreathInstruction');
+  const counter = document.getElementById('homeBreathCounter');
+  const status = document.getElementById('homeBreathStatus');
+
+  counter.textContent = breathSec;
+  instruction.textContent = phases[breathPhase].label;
+  status.textContent = phases[breathPhase].text;
+  orb.className = 'breathing-orb ' + phases[breathPhase].cls;
+
+  breathSec--;
+  if (breathSec < 1) {
+    breathPhase = (breathPhase + 1) % 4;
+    breathSec = 4;
+  }
+}
+
+function fillDemoAndLogin() {
+  window.location.href = "{{ url_for('login') }}?demo=true";
+}
+</script>
+{% endblock %}

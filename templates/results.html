@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Screening Results — MINDMED{% endblock %}
+
+{% block content %}
+
+<!-- Results Hero Header -->
+<div class="results-header-card">
+  <h1>Your Wellbeing Screening Summary</h1>
+  <p>
+    Here is an integrated review of your recent check-in. MINDMED evaluates your self-reported responses 
+    against your personal baseline to highlight shifts and provide gentle restorative recommendations.
+  </p>
+</div>
+
+<!-- Early Awareness Box if Pattern Detected -->
+{% if early_awareness and early_awareness.triggered %}
+  <div class="early-awareness-alert">
+    <div class="awareness-header">
+      <span class="awareness-badge">MindMED Early Awareness</span>
+      <h3 class="awareness-title">{{ early_awareness.title }}</h3>
+    </div>
+    
+    <p class="awareness-pattern">
+      ⚠️ {{ early_awareness.summary }}<br>
+      <em>{{ early_awareness.pattern_message }}</em>
+    </p>
+
+    <div class="deviations-grid">
+      {% for dev in early_awareness.deviations %}
+        <div class="deviation-chip">
+          <div class="deviation-top">
+            <span class="deviation-metric">{{ dev.metric }}</span>
+            <span class="deviation-delta">{{ dev.change }}</span>
+          </div>
+          <p class="deviation-desc">{{ dev.description }}</p>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="awareness-actions">
+      <h4>Suggested Restorative Actions:</h4>
+      <ul>
+        {% for rec in early_awareness.recommendations %}
+          <li>{{ rec }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Screening Cards Grid -->
+<div class="section-header">
+  <div>
+    <h2 class="section-title">📋 Dimension Breakdown & Recommendations</h2>
+    <p class="section-subtitle">Screening indicators and personalized restorative suggestions.</p>
+  </div>
+  <div>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-primary">Return to Dashboard</a>
+  </div>
+</div>
+
+<div class="results-grid">
+  {% for key, item in results_data.items() %}
+    <div class="result-card">
+      <div>
+        <div class="result-card-top">
+          <h3 class="result-title">{{ item.label }}</h3>
+          <span class="badge {{ item.indication.class }}">
+            {{ item.indication.level }}
+          </span>
+        </div>
+
+        <div style="display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 0.5rem;">
+          <span style="font-size: 2rem; font-weight: 800; color: var(--slate-900);">{{ item.score }}</span>
+          <span style="font-size: 0.9rem; color: var(--slate-400); font-weight: 600;">/ 5</span>
+        </div>
+
+        <!-- Baseline comparison text -->
+        <p style="font-size: 0.82rem; color: var(--slate-600); margin-bottom: 0.75rem;">
+          {% if item.baseline is not none %}
+            <strong>Baseline:</strong> {{ item.baseline|round(1) }}/5 &nbsp;|&nbsp; 
+            <span style="font-weight: 700; color: var(--primary);">Delta: {{ item.delta_str }}</span><br>
+            <span style="font-size: 0.78rem; color: var(--slate-500);">{{ item.delta_note }}</span>
+          {% else %}
+            <span>Baseline not yet recorded for this specific factor.</span>
+          {% endif %}
+        </p>
+      </div>
+
+      <div class="result-suggestion-box">
+        <h5>Suggested Next Step</h5>
+        <p>{{ item.suggestion }}</p>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Action Footer -->
+<div style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); padding: 1.8rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; box-shadow: var(--shadow-sm);">
+  <div>
+    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--slate-900); margin-bottom: 0.2rem;">What would you like to do next?</h3>
+    <p style="font-size: 0.85rem; color: var(--slate-500);">
+      Debrief your scores with your AI companion, explore verified specialists, or view your provider summary.
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="{{ url_for('ai_companion') }}" class="btn btn-primary">
+      💬 Talk to AI Companion
+    </a>
+    <a href="{{ url_for('insights') }}" class="btn btn-secondary">
+      📈 View Insights & Trends
+    </a>
+    <a href="{{ url_for('professionals') }}" class="btn btn-secondary">
+      🩺 Find a Doctor
+    </a>
+    <a href="{{ url_for('summary') }}" class="btn btn-outline">
+      📄 Clinical Summary
+    </a>
+  </div>
+</div>
+
+{% endblock %}

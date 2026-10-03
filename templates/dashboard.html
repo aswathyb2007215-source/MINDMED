@@ -1,0 +1,680 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — MINDMED AI HealthTech{% endblock %}
+
+{% block content %}
+
+<!-- Welcome Hero Banner -->
+<div class="welcome-banner">
+  <div class="welcome-info">
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+      <span class="badge badge-low" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">
+        ● Platform Active
+      </span>
+      {% if has_baseline %}
+        <span class="badge badge-low" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3);">
+          ✓ Baseline Calibrated
+        </span>
+      {% endif %}
+    </div>
+    <h1>Welcome, {{ current_user['name'].split()[0] }} 👋</h1>
+    <p>
+      Your personalized AI wellbeing center. MINDMED continuously establishes your personal baseline to deliver proactive pattern alerts before burnout deepens.
+    </p>
+  </div>
+  <div class="welcome-actions">
+    <a href="{{ url_for('assessment') }}" class="btn btn-primary btn-lg shadow-glow">
+      ✍️ Take Wellbeing Check
+    </a>
+    <a href="{{ url_for('ai_companion') }}" class="btn btn-secondary btn-lg" style="background: rgba(255,255,255,0.15); color: #ffffff; border-color: rgba(255,255,255,0.25);">
+      💬 AI Companion
+    </a>
+    <a href="{{ url_for('insights') }}" class="btn btn-outline btn-lg" style="color: white; border-color: rgba(255,255,255,0.4);">
+      📈 View Insights
+    </a>
+  </div>
+</div>
+
+<!-- DAILY MOOD CHECK-IN WIDGET -->
+<div class="mood-checkin-container glass-panel" style="margin-bottom: 2rem; padding: 1.6rem; border-radius: var(--radius-lg);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+    <div>
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--slate-900); display: flex; align-items: center; gap: 0.5rem;">
+        <span>🌱 Daily Mood & Vitality Check-In</span>
+        <span id="streakBadge" class="badge badge-low" style="font-size: 0.75rem;">
+          🔥 {{ total_moods }} Check-ins Logged
+        </span>
+      </h3>
+      <p style="font-size: 0.84rem; color: var(--slate-500); margin: 0;">
+        Log how you are feeling right now to keep your emotional trend and timeline up to date.
+      </p>
+    </div>
+    {% if today_checkin %}
+      <span class="badge badge-neutral" style="font-size: 0.78rem;">
+        ✓ Today's status: <strong>{{ today_checkin['mood_label'] }}</strong> ({{ today_checkin['created_at'][11:16] }})
+      </span>
+    {% endif %}
+  </div>
+
+  <form id="moodCheckinForm" onsubmit="submitMoodCheckin(event)">
+    <div class="mood-selector-row">
+      <button type="button" class="mood-btn" data-score="5" data-label="Great" onclick="selectMood(this, 5, 'Great')">
+        <span class="m-emoji">😄</span>
+        <span class="m-label">Great</span>
+      </button>
+      <button type="button" class="mood-btn" data-score="4" data-label="Good" onclick="selectMood(this, 4, 'Good')">
+        <span class="m-emoji">🙂</span>
+        <span class="m-label">Good</span>
+      </button>
+      <button type="button" class="mood-btn active" data-score="3" data-label="Okay" onclick="selectMood(this, 3, 'Okay')">
+        <span class="m-emoji">😐</span>
+        <span class="m-label">Okay</span>
+      </button>
+      <button type="button" class="mood-btn" data-score="2" data-label="Low" onclick="selectMood(this, 2, 'Low')">
+        <span class="m-emoji">😔</span>
+        <span class="m-label">Low</span>
+      </button>
+      <button type="button" class="mood-btn" data-score="1" data-label="Anxious" onclick="selectMood(this, 1, 'Anxious')">
+        <span class="m-emoji">😰</span>
+        <span class="m-label">Anxious</span>
+      </button>
+    </div>
+
+    <!-- Quick Emotion Tags & Notes -->
+    <div style="display: grid; grid-template-columns: 1fr 1.5fr auto; gap: 1rem; align-items: center; margin-top: 1.2rem; flex-wrap: wrap;">
+      <div>
+        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--slate-600); margin-bottom: 0.3rem;">
+          Physical Energy (1-5): <strong id="energyScoreVal" style="color: var(--primary);">3/5</strong>
+        </label>
+        <input type="range" id="moodEnergy" min="1" max="5" value="3" class="range-slider" style="width: 100%;" oninput="document.getElementById('energyScoreVal').textContent = this.value + '/5'">
+      </div>
+
+      <div>
+        <label style="display: block; font-size: 0.78rem; font-weight: 600; color: var(--slate-600); margin-bottom: 0.3rem;">
+          Quick Note (Optional)
+        </label>
+        <input type="text" id="moodNote" class="form-input" style="padding: 0.45rem 0.75rem; font-size: 0.85rem;" placeholder="e.g. Busy sprint at work, feeling focused...">
+      </div>
+
+      <div style="display: flex; align-items: flex-end; height: 100%;">
+        <button type="submit" id="moodSubmitBtn" class="btn btn-primary btn-sm" style="padding: 0.6rem 1.2rem; height: 38px;">
+          Log Check-In
+        </button>
+      </div>
+    </div>
+    
+    <div id="moodFeedback" style="display: none; margin-top: 0.8rem; font-size: 0.84rem; color: #0d9488; font-weight: 600;"></div>
+  </form>
+</div>
+
+{% if not has_baseline %}
+  <!-- Empty Baseline State -->
+  <div class="empty-baseline-card">
+    <div class="empty-baseline-icon">🌱</div>
+    <h2>Establish Your Personal Baseline</h2>
+    <p>
+      Complete your first wellbeing assessment to create your personal baseline. 
+      Once established, MINDMED will compare future check-ins against your baseline to detect meaningful shifts and deliver early awareness insights.
+    </p>
+    <a href="{{ url_for('assessment') }}" class="btn btn-primary btn-lg shadow-glow">
+      Start Your First Assessment →
+    </a>
+  </div>
+{% else %}
+
+  <!-- MindMED Early Awareness Alert Banner (Triggered when 2+ indicators deviate unfavorably) -->
+  {% if early_awareness and early_awareness.triggered %}
+    <div class="early-awareness-alert">
+      <div class="awareness-header">
+        <span class="awareness-badge">Early Awareness</span>
+        <h3 class="awareness-title">{{ early_awareness.title }}</h3>
+      </div>
+      
+      <p class="awareness-pattern">
+        ⚠️ {{ early_awareness.summary }}<br>
+        <em>{{ early_awareness.pattern_message }}</em>
+      </p>
+
+      <div class="deviations-grid">
+        {% for dev in early_awareness.deviations %}
+          <div class="deviation-chip">
+            <div class="deviation-top">
+              <span class="deviation-metric">{{ dev.metric }}</span>
+              <span class="deviation-delta">{{ dev.change }}</span>
+            </div>
+            <p class="deviation-desc">{{ dev.description }}</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="awareness-actions">
+        <h4>Recommended Early Restorative Steps:</h4>
+        <ul>
+          {% for rec in early_awareness.recommendations %}
+            <li>{{ rec }}</li>
+          {% endfor %}
+        </ul>
+        <div style="margin-top: 0.85rem; display: flex; gap: 0.65rem; flex-wrap: wrap;">
+          <a href="{{ url_for('ai_companion') }}" class="btn btn-sm btn-primary">Discuss with AI Companion</a>
+          <a href="{{ url_for('professionals') }}" class="btn btn-sm btn-secondary">Connect with a Specialist</a>
+          <a href="{{ url_for('insights') }}" class="btn btn-sm btn-outline">Analyze in Insights</a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Core Wellbeing Metrics Section -->
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">✨ Current Wellbeing Overview</h2>
+      <p class="section-subtitle">Based on your latest check-in. Non-diagnostic self-reported indicators.</p>
+    </div>
+    <div>
+      <a href="{{ url_for('assessment') }}" class="btn btn-sm btn-outline">New Check-In</a>
+    </div>
+  </div>
+
+  <div class="grid-4">
+    <!-- Stress Card -->
+    <div class="wellbeing-card">
+      <div>
+        <div class="card-top">
+          <span class="metric-label">Stress Load</span>
+          <div class="metric-icon-box">⚡</div>
+        </div>
+        <div class="score-row">
+          <span class="metric-score">{{ latest_assessment['stress'] }}</span>
+          <span class="metric-scale">/ 5</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill {% if latest_assessment['stress'] <= 2 %}fill-emerald{% elif latest_assessment['stress'] == 3 %}fill-amber{% else %}fill-rose{% endif %}" 
+               style="width: {{ latest_assessment['stress'] * 20 }}%;"></div>
+        </div>
+      </div>
+      <div class="card-footer-info">
+        <span>Baseline: {{ baseline['stress_baseline']|round(1) }}/5</span>
+        <span class="badge {% if latest_assessment['stress'] <= 2 %}badge-low{% elif latest_assessment['stress'] == 3 %}badge-moderate{% elif latest_assessment['stress'] == 4 %}badge-elevated{% else %}badge-high{% endif %}">
+          {% if latest_assessment['stress'] <= 2 %}Low Load{% elif latest_assessment['stress'] == 3 %}Moderate{% else %}Elevated{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- Mood Card -->
+    <div class="wellbeing-card">
+      <div>
+        <div class="card-top">
+          <span class="metric-label">Mood & Positivity</span>
+          <div class="metric-icon-box">☀️</div>
+        </div>
+        <div class="score-row">
+          <span class="metric-score">{{ latest_assessment['mood'] }}</span>
+          <span class="metric-scale">/ 5</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill {% if latest_assessment['mood'] >= 4 %}fill-emerald{% elif latest_assessment['mood'] == 3 %}fill-teal{% else %}fill-amber{% endif %}" 
+               style="width: {{ latest_assessment['mood'] * 20 }}%;"></div>
+        </div>
+      </div>
+      <div class="card-footer-info">
+        <span>Baseline: {{ baseline['mood_baseline']|round(1) }}/5</span>
+        <span class="badge {% if latest_assessment['mood'] >= 4 %}badge-low{% elif latest_assessment['mood'] == 3 %}badge-neutral{% else %}badge-moderate{% endif %}">
+          {% if latest_assessment['mood'] >= 4 %}Flourishing{% elif latest_assessment['mood'] == 3 %}Balanced{% else %}Low Mood{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- Sleep Card -->
+    <div class="wellbeing-card">
+      <div>
+        <div class="card-top">
+          <span class="metric-label">Sleep Restoration</span>
+          <div class="metric-icon-box">🌙</div>
+        </div>
+        <div class="score-row">
+          <span class="metric-score">{{ latest_assessment['sleep'] }}</span>
+          <span class="metric-scale">/ 5</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill {% if latest_assessment['sleep'] >= 4 %}fill-emerald{% elif latest_assessment['sleep'] == 3 %}fill-sky{% else %}fill-amber{% endif %}" 
+               style="width: {{ latest_assessment['sleep'] * 20 }}%;"></div>
+        </div>
+      </div>
+      <div class="card-footer-info">
+        <span>Baseline: {{ baseline['sleep_baseline']|round(1) }}/5</span>
+        <span class="badge {% if latest_assessment['sleep'] >= 4 %}badge-low{% elif latest_assessment['sleep'] == 3 %}badge-neutral{% else %}badge-moderate{% endif %}">
+          {% if latest_assessment['sleep'] >= 4 %}Restful{% elif latest_assessment['sleep'] == 3 %}Moderate{% else %}Disrupted{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- Energy Card -->
+    <div class="wellbeing-card">
+      <div>
+        <div class="card-top">
+          <span class="metric-label">Daily Vitality</span>
+          <div class="metric-icon-box">🔋</div>
+        </div>
+        <div class="score-row">
+          <span class="metric-score">{{ latest_assessment['energy'] }}</span>
+          <span class="metric-scale">/ 5</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill {% if latest_assessment['energy'] >= 4 %}fill-emerald{% elif latest_assessment['energy'] == 3 %}fill-sky{% else %}fill-rose{% endif %}" 
+               style="width: {{ latest_assessment['energy'] * 20 }}%;"></div>
+        </div>
+      </div>
+      <div class="card-footer-info">
+        <span>Baseline: {{ baseline['energy_baseline']|round(1) }}/5</span>
+        <span class="badge {% if latest_assessment['energy'] >= 4 %}badge-low{% elif latest_assessment['energy'] == 3 %}badge-neutral{% else %}badge-moderate{% endif %}">
+          {% if latest_assessment['energy'] >= 4 %}High Vitality{% elif latest_assessment['energy'] == 3 %}Balanced{% else %}Depleted{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE HEALTH ANALYTICS: CHARTS ROW -->
+  <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; margin-top: 1.8rem;">
+    <!-- Trend Chart -->
+    <div class="card glass-panel" style="padding: 1.5rem;">
+      <div class="card-header" style="margin-bottom: 1rem;">
+        <div>
+          <h3 class="card-title" style="font-size: 1.05rem;">📈 Wellbeing Trajectory Trend</h3>
+          <p style="font-size: 0.8rem; color: var(--slate-500); margin: 0;">Multi-marker longitudinal screening tracking</p>
+        </div>
+        <span class="badge badge-neutral" style="font-size: 0.72rem;">Last 10 Screenings</span>
+      </div>
+      <div style="height: 250px; position: relative;">
+        <canvas id="dashboardTrendChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Radar Balance Chart -->
+    <div class="card glass-panel" style="padding: 1.5rem;">
+      <div class="card-header" style="margin-bottom: 1rem;">
+        <div>
+          <h3 class="card-title" style="font-size: 1.05rem;">🕸️ Balance Profile vs Baseline</h3>
+          <p style="font-size: 0.8rem; color: var(--slate-500); margin: 0;">Multi-dimensional balance comparison</p>
+        </div>
+        <span class="badge badge-low" style="font-size: 0.72rem;">6 Dimensions</span>
+      </div>
+      <div style="height: 250px; position: relative;">
+        <canvas id="dashboardRadarChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Feature: Current Wellbeing vs Personal Baseline Comparison -->
+  <div class="comparison-card" style="margin-top: 1.8rem;">
+    <div class="section-header" style="margin-bottom: 0.5rem;">
+      <div>
+        <h2 class="section-title">📊 Current Wellbeing vs. Personal Baseline</h2>
+        <p class="section-subtitle">Detecting subtle changes between your ongoing responses and your established baseline norm.</p>
+      </div>
+      <form action="{{ url_for('update_baseline') }}" method="POST" style="margin: 0;">
+        <button type="submit" class="btn btn-sm btn-secondary" title="Recalibrate your baseline to your latest check-in">
+          Recalibrate Baseline
+        </button>
+      </form>
+    </div>
+
+    <div class="comparison-grid">
+      {% for key, item in comparisons.items() %}
+        <div class="comp-item">
+          <div class="comp-header">
+            <span class="comp-name">{{ item.name }}</span>
+            <span class="delta-badge {% if item.is_unfavorable %}delta-worse{% elif item.is_favorable %}delta-improved{% else %}delta-neutral{% endif %}">
+              {{ item.delta_str }}
+            </span>
+          </div>
+
+          <div class="comp-values">
+            <div class="val-box">
+              <span class="val-lbl">Baseline</span>
+              <span class="val-num">{{ item.baseline|round(1) }} <small style="font-size: 0.75rem; color: var(--slate-400);">/ 5</small></span>
+            </div>
+            <div style="font-size: 1.1rem; color: var(--slate-300);">➔</div>
+            <div class="val-box" style="text-align: right;">
+              <span class="val-lbl">Current</span>
+              <span class="val-num" style="color: var(--primary);">{{ item.current }} <small style="font-size: 0.75rem; color: var(--slate-400);">/ 5</small></span>
+            </div>
+          </div>
+
+          <p class="comp-note">
+            {{ item.note }}
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Risk Indicators (Non-Diagnostic Early Awareness) -->
+  <div class="section-header" style="margin-top: 2rem;">
+    <div>
+      <h2 class="section-title">🛡️ Risk Indicators & Pattern Detection</h2>
+      <p class="section-subtitle">Non-diagnostic screening for early awareness and preventative self-care.</p>
+    </div>
+    <span class="badge badge-neutral">Screening Only</span>
+  </div>
+
+  <div class="risk-grid">
+    <!-- Anxiety Screening -->
+    <div class="risk-card">
+      <div>
+        <div class="risk-card-top">
+          <h3 class="risk-card-title">Anxiety-Risk Screening</h3>
+          <span class="badge {{ risk_indicators['anxiety']['class'] }}">
+            {{ risk_indicators['anxiety']['level'] }}
+          </span>
+        </div>
+        <p class="risk-card-desc">
+          Evaluates frequency of nervous tension, restlessness, and difficulty relaxing over recent days.
+        </p>
+      </div>
+      <div class="risk-card-footer">
+        <span style="font-size: 0.8rem; color: var(--slate-500);">Score: {{ latest_assessment['anxiety'] }}/5</span>
+        <span style="font-size: 0.78rem; font-weight: 600; color: var(--slate-700);">{{ risk_indicators['anxiety']['text'] }}</span>
+      </div>
+    </div>
+
+    <!-- Depression-Risk Screening -->
+    <div class="risk-card">
+      <div>
+        <div class="risk-card-top">
+          <h3 class="risk-card-title">Depression-Risk Screening</h3>
+          <span class="badge {{ risk_indicators['depression']['class'] }}">
+            {{ risk_indicators['depression']['level'] }}
+          </span>
+        </div>
+        <p class="risk-card-desc">
+          Observes patterns of interest loss, emotional fatigue, or feelings of discouragement.
+        </p>
+      </div>
+      <div class="risk-card-footer">
+        <span style="font-size: 0.8rem; color: var(--slate-500);">Score: {{ latest_assessment['depression'] }}/5</span>
+        <span style="font-size: 0.78rem; font-weight: 600; color: var(--slate-700);">{{ risk_indicators['depression']['text'] }}</span>
+      </div>
+    </div>
+
+    <!-- Burnout Screening -->
+    <div class="risk-card">
+      <div>
+        <div class="risk-card-top">
+          <h3 class="risk-card-title">Burnout Pattern Observation</h3>
+          <span class="badge {{ risk_indicators['burnout']['class'] }}">
+            {{ risk_indicators['burnout']['level'] }}
+          </span>
+        </div>
+        <p class="risk-card-desc">
+          Monitors cognitive load, motivation depletion, and boundary strain from sustained demands.
+        </p>
+      </div>
+      <div class="risk-card-footer">
+        <span style="font-size: 0.8rem; color: var(--slate-500);">Score: {{ latest_assessment['burnout'] }}/5</span>
+        <span style="font-size: 0.78rem; font-weight: 600; color: var(--slate-700);">{{ risk_indicators['burnout']['text'] }}</span>
+      </div>
+    </div>
+
+    <!-- General Health Risk -->
+    <div class="risk-card">
+      <div>
+        <div class="risk-card-top">
+          <h3 class="risk-card-title">General Health-Risk Factor</h3>
+          <span class="badge {{ risk_indicators['health_risk']['class'] }}">
+            {{ risk_indicators['health_risk']['level'] }}
+          </span>
+        </div>
+        <p class="risk-card-desc">
+          Evaluates physical tiredness, basic daily vitality, and somatic recovery rhythms.
+        </p>
+      </div>
+      <div class="risk-card-footer">
+        <span style="font-size: 0.8rem; color: var(--slate-500);">Score: {{ latest_assessment['health_risk'] }}/5</span>
+        <span style="font-size: 0.78rem; font-weight: 600; color: var(--slate-700);">{{ risk_indicators['health_risk']['text'] }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Quick Links Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.8rem;">
+    <!-- AI Companion Quick Card -->
+    <div class="card" style="background: #f0fdfa; border-color: #99f6e4;">
+      <div class="card-header">
+        <h3 class="card-title" style="color: var(--primary);">💬 AI Wellbeing Companion</h3>
+        <span class="badge badge-low">Online & Ready</span>
+      </div>
+      <p style="font-size: 0.88rem; color: #115e59; margin-bottom: 1.2rem; line-height: 1.5;">
+        Need to debrief a stressful event or explore safe breathing exercises? Talk with your private AI companion anytime.
+      </p>
+      <a href="{{ url_for('ai_companion') }}" class="btn btn-primary btn-sm">Start Conversation →</a>
+    </div>
+
+    <!-- Insights Quick Card -->
+    <div class="card" style="background: #eef2ff; border-color: #c7d2fe;">
+      <div class="card-header">
+        <h3 class="card-title" style="color: #4338ca;">📈 Deep Insights & Timeline</h3>
+        <span class="badge badge-neutral" style="background: #e0e7ff; color: #3730a3;">Predictive Engine</span>
+      </div>
+      <p style="font-size: 0.88rem; color: #3730a3; margin-bottom: 1.2rem; line-height: 1.5;">
+        View your longitudinal wellbeing timeline, AI-calculated 7-day risk predictions, and factor breakdowns.
+      </p>
+      <a href="{{ url_for('insights') }}" class="btn btn-secondary btn-sm" style="background: #4f46e5; border-color: #4f46e5; color: white;">Open Insights →</a>
+    </div>
+
+    <!-- Clinical Summary Quick Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">📋 Clinical & Professional Summary</h3>
+        <span class="badge badge-neutral">Provider-Ready</span>
+      </div>
+      <p style="font-size: 0.88rem; color: var(--slate-600); margin-bottom: 1.2rem; line-height: 1.5;">
+        Review an organized, professional-ready wellbeing summary sheet with baseline deltas and your active consent status.
+      </p>
+      <a href="{{ url_for('summary') }}" class="btn btn-secondary btn-sm">View Summary Sheet →</a>
+    </div>
+  </div>
+
+{% endif %}
+
+<!-- Chart.js and Mood Checkin Script -->
+<script>
+let selectedMoodScore = 3;
+let selectedMoodLabel = "Okay";
+
+function selectMood(btn, score, label) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedMoodScore = score;
+  selectedMoodLabel = label;
+}
+
+async function submitMoodCheckin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('moodSubmitBtn');
+  const feedback = document.getElementById('moodFeedback');
+  const energy = document.getElementById('moodEnergy').value;
+  const note = document.getElementById('moodNote').value;
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch("{{ url_for('api_mood_checkin') }}", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mood_score: selectedMoodScore,
+        mood_label: selectedMoodLabel,
+        energy_score: energy,
+        note: note
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      feedback.style.display = 'block';
+      feedback.style.color = '#0d9488';
+      feedback.textContent = `✓ ${data.message}`;
+      document.getElementById('streakBadge').textContent = `🔥 ${data.streak} Check-ins Logged`;
+      document.getElementById('moodNote').value = '';
+      setTimeout(() => { feedback.style.display = 'none'; }, 4000);
+    } else {
+      feedback.style.display = 'block';
+      feedback.style.color = '#f43f5e';
+      feedback.textContent = data.error || 'Failed to record check-in.';
+    }
+  } catch (err) {
+    feedback.style.display = 'block';
+    feedback.style.color = '#f43f5e';
+    feedback.textContent = 'Network error saving mood check-in.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Log Check-In';
+  }
+}
+
+// Chart.js Rendering for Dashboard
+document.addEventListener('DOMContentLoaded', function() {
+  {% if has_baseline and chart_dates|length > 0 %}
+    // Line Trend Chart
+    const ctxTrend = document.getElementById('dashboardTrendChart');
+    if (ctxTrend) {
+      new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+          labels: {{ chart_dates | tojson }},
+          datasets: [
+            {
+              label: 'Stress Load',
+              data: {{ chart_stress | tojson }},
+              borderColor: '#f43f5e',
+              backgroundColor: 'rgba(244, 63, 94, 0.1)',
+              tension: 0.35,
+              borderWidth: 2,
+              fill: false
+            },
+            {
+              label: 'Mood & Positivity',
+              data: {{ chart_mood | tojson }},
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.35,
+              borderWidth: 2,
+              fill: false
+            },
+            {
+              label: 'Sleep Quality',
+              data: {{ chart_sleep | tojson }},
+              borderColor: '#0284c7',
+              backgroundColor: 'rgba(2, 132, 199, 0.1)',
+              tension: 0.35,
+              borderWidth: 2,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }
+          },
+          scales: {
+            y: { min: 1, max: 5, ticks: { stepSize: 1 } }
+          }
+        }
+      });
+    }
+
+    // Radar Chart
+    const ctxRadar = document.getElementById('dashboardRadarChart');
+    if (ctxRadar) {
+      new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+          labels: {{ radar_labels | tojson }},
+          datasets: [
+            {
+              label: 'Current Check-In',
+              data: {{ radar_current | tojson }},
+              borderColor: '#0d9488',
+              backgroundColor: 'rgba(13, 148, 136, 0.25)',
+              pointBackgroundColor: '#0d9488',
+              borderWidth: 2
+            },
+            {
+              label: 'Personal Baseline',
+              data: {{ radar_baseline | tojson }},
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.15)',
+              pointBackgroundColor: '#6366f1',
+              borderWidth: 2,
+              borderDash: [4, 4]
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              min: 0,
+              max: 5,
+              ticks: { stepSize: 1, display: false },
+              pointLabels: { font: { size: 11, weight: '600' } }
+            }
+          },
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+          }
+        }
+      });
+    }
+  {% endif %}
+});
+</script>
+
+<style>
+.mood-selector-row {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 0.2rem 0;
+}
+.mood-btn {
+  flex: 1;
+  min-width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+  background: white;
+  border: 1.5px solid var(--slate-200);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.mood-btn:hover {
+  border-color: var(--primary);
+  background: var(--slate-50);
+}
+.mood-btn.active {
+  border-color: var(--primary);
+  background: #f0fdfa;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+}
+.m-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+.m-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--slate-700);
+}
+.mood-btn.active .m-label {
+  color: var(--primary);
+}
+</style>
+
+{% endblock %}

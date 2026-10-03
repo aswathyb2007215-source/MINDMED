@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Profile & Consent Management — MINDMED{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Profile & Privacy Consent</h1>
+  <p>Manage your personal profile and control how your wellbeing data is shared with healthcare providers.</p>
+</div>
+
+<div class="profile-layout">
+
+  <!-- Left: Profile Information & Edit Form -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Personal Information</h2>
+      <span class="badge badge-low">Verified Account</span>
+    </div>
+
+    <form action="{{ url_for('profile') }}" method="POST">
+      <input type="hidden" name="action" value="update_profile">
+
+      <div class="form-group">
+        <label class="form-label" for="name">Full Name</label>
+        <input type="text" id="name" name="name" class="form-input" value="{{ user['name'] }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <input type="email" id="email" class="form-input" value="{{ user['email'] }}" disabled style="background: var(--slate-100); color: var(--slate-500); cursor: not-allowed;">
+        <span style="font-size: 0.75rem; color: var(--slate-400);">Email address is associated with your account and cannot be modified.</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="age">Age</label>
+          <input type="number" id="age" name="age" class="form-input" value="{{ user['age'] or '' }}" min="10" max="120">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="gender">Gender</label>
+          <select id="gender" name="gender" class="form-select">
+            <option value="Female" {% if user['gender'] == 'Female' %}selected{% endif %}>Female</option>
+            <option value="Male" {% if user['gender'] == 'Male' %}selected{% endif %}>Male</option>
+            <option value="Non-binary" {% if user['gender'] == 'Non-binary' %}selected{% endif %}>Non-binary</option>
+            <option value="Prefer not to say" {% if user['gender'] == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="location">Location / City</label>
+        <input type="text" id="location" name="location" class="form-input" value="{{ user['location'] or '' }}">
+      </div>
+
+      <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+    </form>
+  </div>
+
+  <!-- Right: Consent Management & Baseline Info -->
+  <div>
+    
+    <!-- Consent Management Card -->
+    <div class="card" style="margin-bottom: 1.5rem; border-color: #99f6e4;">
+      <div class="card-header">
+        <h2 class="card-title" style="color: var(--primary);">🛡️ Information Sharing Consent</h2>
+        <span class="badge badge-low">User Controlled</span>
+      </div>
+      
+      <p style="font-size: 0.86rem; color: var(--slate-600); margin-bottom: 1.2rem; line-height: 1.5;">
+        <strong>You control what information is shared with healthcare professionals.</strong>
+        Any summary or screening data accessed by doctors requires your active permission below.
+      </p>
+
+      <form action="{{ url_for('profile') }}" method="POST">
+        <input type="hidden" name="action" value="update_consent">
+
+        <label class="consent-checkbox-card">
+          <input type="checkbox" name="share_summary" value="1" {% if consent and consent['share_summary'] %}checked{% endif %}>
+          <div class="consent-text">
+            <h4>Share Wellbeing Summary</h4>
+            <p>Authorize healthcare professionals to view your consolidated wellbeing summary sheet and trend deltas.</p>
+          </div>
+        </label>
+
+        <label class="consent-checkbox-card">
+          <input type="checkbox" name="share_assessment" value="1" {% if consent and consent['share_assessment'] %}checked{% endif %}>
+          <div class="consent-text">
+            <h4>Share Assessment Details</h4>
+            <p>Allow authorized specialists to view individual response scores across anxiety, depression, and burnout screenings.</p>
+          </div>
+        </label>
+
+        <button type="submit" class="btn btn-primary btn-sm" style="margin-top: 0.5rem; width: 100%;">
+          Update Privacy Preferences
+        </button>
+      </form>
+    </div>
+
+    <!-- Baseline & Account Overview -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title" style="font-size: 1.05rem;">Wellbeing Account Stats</h3>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.88rem;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--slate-100); padding-bottom: 0.5rem;">
+          <span style="color: var(--slate-500);">Total Check-Ins Completed:</span>
+          <span style="font-weight: 700; color: var(--slate-900);">{{ total_assessments }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--slate-100); padding-bottom: 0.5rem;">
+          <span style="color: var(--slate-500);">Personal Baseline:</span>
+          <span style="font-weight: 700; color: var(--primary);">
+            {% if baseline and baseline['stress_baseline'] is not none %}
+              Established (Calibrated)
+            {% else %}
+              Not Established
+            {% endif %}
+          </span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--slate-100); padding-bottom: 0.5rem;">
+          <span style="color: var(--slate-500);">Account Created:</span>
+          <span style="font-weight: 600; color: var(--slate-700);">{{ user['created_at'][:10] }}</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.84rem; color: var(--slate-500);">End active session:</span>
+        <a href="{{ url_for('logout') }}" class="btn btn-sm btn-danger">Logout Securely</a>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

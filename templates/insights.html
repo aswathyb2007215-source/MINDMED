@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+
+{% block title %}Insights & Longitudinal Wellbeing Timeline — MINDMED{% endblock %}
+
+{% block head_extra %}
+<style>
+.insights-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+.insights-hero-glow {
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.3) 0%, transparent 70%);
+  top: -100px;
+  right: -50px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.risk-meter-wrap {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.risk-score-display {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--slate-200);
+}
+.score-circle {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--primary) calc({{ risk_prediction.composite_score }} * 1%),
+    #e2e8f0 0%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.2);
+}
+.score-circle-inner {
+  width: 76px;
+  height: 76px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.score-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  line-height: 1;
+}
+.score-lbl {
+  font-size: 0.65rem;
+  color: var(--slate-500);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.timeline-list {
+  position: relative;
+  padding-left: 2rem;
+  margin-top: 1.5rem;
+}
+.timeline-list::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 7px;
+  width: 2px;
+  background: var(--slate-200);
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.timeline-dot {
+  position: absolute;
+  left: -2rem;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  border: 3px solid var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+.timeline-content {
+  background: white;
+  border: 1px solid var(--slate-200);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.timeline-content:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+.factor-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.factor-progress-bg {
+  height: 8px;
+  background: var(--slate-100);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 0.3rem;
+}
+.factor-progress-bar {
+  height: 100%;
+  border-radius: 4px;
+}
+@media (max-width: 860px) {
+  .risk-meter-wrap {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Insights Hero -->
+<div class="insights-hero">
+  <div class="insights-hero-glow"></div>
+  <div style="position: relative; z-index: 1;">
+    <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem;">
+      <span class="badge badge-low" style="background: rgba(13, 148, 136, 0.25); color: #5eead4; border: 1px solid rgba(45, 212, 191, 0.4);">
+        AI Predictive Modeling
+      </span>
+      <span style="font-size: 0.8rem; color: var(--slate-300);">
+        Updated in real-time from your assessments & mood logs
+      </span>
+    </div>
+    <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.6rem; font-family: 'Plus Jakarta Sans', var(--font-main);">
+      Longitudinal Insights & Trend Detection
+    </h1>
+    <p style="font-size: 1.05rem; color: var(--slate-300); max-width: 720px; line-height: 1.6; margin: 0;">
+      Observe your personal wellbeing trajectory over time. Our explainable AI model analyzes subtle changes across emotional positivity, stress loads, and sleep architecture before physical fatigue sets in.
+    </p>
+  </div>
+</div>
+
+<!-- SECTION 1: PERSONALIZED RISK PREDICTION & EXPLAINABILITY -->
+<div class="risk-meter-wrap">
+  
+  <!-- Left: Composite Risk Score Card -->
+  <div class="card glass-panel" style="padding: 1.6rem;">
+    <div class="card-header" style="margin-bottom: 1rem;">
+      <div>
+        <h3 class="card-title">🛡️ Personalized Risk Prediction Index</h3>
+        <p style="font-size: 0.82rem; color: var(--slate-500); margin: 0;">Non-diagnostic composite early-awareness calculation</p>
+      </div>
+      <span class="badge {{ risk_prediction.level_badge }}">{{ risk_prediction.level }}</span>
+    </div>
+
+    <div class="risk-score-display">
+      <div class="score-circle">
+        <div class="score-circle-inner">
+          <span class="score-num">{{ risk_prediction.composite_score }}</span>
+          <span class="score-lbl">Index / 100</span>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+          <span style="font-size: 0.95rem; font-weight: 700; color: var(--slate-900);">7-Day Projected Outlook</span>
+          <span class="badge badge-neutral" style="font-size: 0.75rem;">{{ risk_prediction.confidence }}% Confidence</span>
+        </div>
+        <div style="font-size: 0.9rem; font-weight: 600; color: var(--primary); margin-bottom: 0.5rem;">
+          ✨ {{ risk_prediction.outlook }}
+        </div>
+        <p style="font-size: 0.84rem; color: var(--slate-600); line-height: 1.5; margin: 0;">
+          {{ risk_prediction.guidance }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick stats strip -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-top: 1.25rem;">
+      <div style="background: var(--slate-50); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-200);">
+        <span style="font-size: 0.72rem; color: var(--slate-500); display: block;">Primary Driver</span>
+        <strong style="font-size: 0.85rem; color: var(--slate-800);">{{ risk_prediction.primary_driver }}</strong>
+      </div>
+      <div style="background: var(--slate-50); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-200);">
+        <span style="font-size: 0.72rem; color: var(--slate-500); display: block;">Screenings Tracked</span>
+        <strong style="font-size: 0.85rem; color: var(--slate-800);">{{ total_assessments }} Completed</strong>
+      </div>
+      <div style="background: var(--slate-50); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-200);">
+        <span style="font-size: 0.72rem; color: var(--slate-500); display: block;">Mood Logs</span>
+        <strong style="font-size: 0.85rem; color: var(--slate-800);">{{ total_checkins }} Logged</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Explainable Factor Breakdown -->
+  <div class="card glass-panel" style="padding: 1.6rem;">
+    <div class="card-header" style="margin-bottom: 1rem;">
+      <div>
+        <h3 class="card-title">🔍 Explainable Factor Attribution</h3>
+        <p style="font-size: 0.82rem; color: var(--slate-500); margin: 0;">How each wellbeing marker contributes to current risk</p>
+      </div>
+      <span class="badge badge-neutral" style="font-size: 0.72rem;">Model Weights</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      {% for factor in risk_prediction.factors %}
+        <div>
+          <div class="factor-bar">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--slate-700);">{{ factor.name }}</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--slate-900);">{{ factor.pct }}%</span>
+              <span class="badge {% if factor.status == 'Elevated' %}badge-elevated{% elif factor.status == 'Watch' %}badge-moderate{% else %}badge-low{% endif %}" style="font-size: 0.68rem; padding: 0.1rem 0.4rem;">
+                {{ factor.status }}
+              </span>
+            </div>
+          </div>
+          <div class="factor-progress-bg">
+            <div class="factor-progress-bar" style="width: {{ factor.pct }}%; background: {% if factor.status == 'Elevated' %}#f43f5e{% elif factor.status == 'Watch' %}#f59e0b{% else %}#10b981{% endif %};"></div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--slate-200); font-size: 0.8rem; color: var(--slate-500);">
+      💡 <em>Factor attribution explains why your risk level changed without algorithmic black boxes.</em>
+    </div>
+  </div>
+
+</div>
+
+<!-- SECTION 2: MULTI-METRIC TRAJECTORY CHART -->
+<div class="card glass-panel" style="margin-bottom: 2rem; padding: 1.6rem;">
+  <div class="section-header" style="margin-bottom: 1rem;">
+    <div>
+      <h2 class="section-title">📊 Multi-Metric Longitudinal Trajectory</h2>
+      <p class="section-subtitle">Visualizing changes across Stress, Mood, Sleep, Anxiety, and Burnout across your assessment timeline.</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="{{ url_for('assessment') }}" class="btn btn-sm btn-primary">Take New Screening</a>
+    </div>
+  </div>
+
+  <div style="height: 320px; position: relative;">
+    <canvas id="longitudinalChart"></canvas>
+  </div>
+</div>
+
+<!-- SECTION 3: WELLBEING TIMELINE & AUDIT LOG -->
+<div class="card glass-panel" style="padding: 1.8rem;">
+  <div class="section-header" style="margin-bottom: 0.5rem;">
+    <div>
+      <h2 class="section-title">🗓️ Longitudinal Wellbeing Timeline</h2>
+      <p class="section-subtitle">Chronological record of your screening checks and daily mood logs.</p>
+    </div>
+    <span class="badge badge-neutral">{{ timeline|length }} Total Events</span>
+  </div>
+
+  {% if timeline|length == 0 %}
+    <div style="text-align: center; padding: 3rem 1rem;">
+      <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">📝</div>
+      <h3>No Timeline Records Yet</h3>
+      <p style="font-size: 0.9rem; color: var(--slate-500); max-width: 450px; margin: 0.5rem auto 1.5rem;">
+        Complete your first wellbeing check or log your daily mood on the dashboard to start populating your personalized timeline.
+      </p>
+      <a href="{{ url_for('assessment') }}" class="btn btn-primary btn-sm">Start Wellbeing Check</a>
+    </div>
+  {% else %}
+    <div class="timeline-list">
+      {% for item in timeline %}
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">{{ item.icon }}</span>
+                <strong style="font-size: 0.95rem; color: var(--slate-900);">{{ item.title }}</strong>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="badge {{ item.badge_class }}" style="font-size: 0.72rem;">{{ item.badge }}</span>
+                <span style="font-size: 0.78rem; color: var(--slate-400);">{{ item.date }}</span>
+              </div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--slate-600); margin: 0; line-height: 1.5;">
+              {{ item.summary }}
+            </p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+<!-- Chart.js Script for Insights -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const ctx = document.getElementById('longitudinalChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: {{ chart_dates | tojson }},
+        datasets: [
+          {
+            label: 'Stress Load',
+            data: {{ chart_stress | tojson }},
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.15)',
+            tension: 0.35,
+            borderWidth: 2.5,
+            pointRadius: 4,
+            fill: false
+          },
+          {
+            label: 'Mood & Positivity',
+            data: {{ chart_mood | tojson }},
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.15)',
+            tension: 0.35,
+            borderWidth: 2.5,
+            pointRadius: 4,
+            fill: false
+          },
+          {
+            label: 'Sleep Quality',
+            data: {{ chart_sleep | tojson }},
+            borderColor: '#0284c7',
+            backgroundColor: 'rgba(2, 132, 199, 0.15)',
+            tension: 0.35,
+            borderWidth: 2.5,
+            pointRadius: 4,
+            fill: false
+          },
+          {
+            label: 'Anxiety Tension',
+            data: {{ chart_anxiety | tojson }},
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.15)',
+            tension: 0.35,
+            borderWidth: 2.5,
+            pointRadius: 4,
+            borderDash: [5, 5],
+            fill: false
+          },
+          {
+            label: 'Burnout Strain',
+            data: {{ chart_burnout | tojson }},
+            borderColor: '#ea580c',
+            backgroundColor: 'rgba(234, 88, 12, 0.15)',
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: 3,
+            borderDash: [3, 3],
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: { boxWidth: 14, font: { size: 12, family: "'Plus Jakarta Sans', sans-serif" } }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          }
+        },
+        scales: {
+          y: {
+            min: 1,
+            max: 5,
+            ticks: {
+              stepSize: 1,
+              callback: function(val) {
+                const labels = { 1: '1 (Low)', 2: '2', 3: '3 (Mod)', 4: '4', 5: '5 (High)' };
+                return labels[val] || val;
+              }
+            },
+            grid: { color: 'rgba(226, 232, 240, 0.6)' }
+          },
+          x: {
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  }
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}MINDMED — Personalized Wellbeing & Early-Awareness{% endblock %}</title>
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js for interactive wellbeing analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('index') }}" class="brand-logo">
+        <div class="brand-icon">M</div>
+        <div class="brand-text">
+          <span class="brand-title">MINDMED</span>
+          <span class="brand-tagline">Talk • Understand • Detect • Connect</span>
+        </div>
+      </a>
+
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">☰</button>
+
+      <ul class="nav-menu" id="navMenu">
+        {% if current_user %}
+          <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">📊 Dashboard</a></li>
+          <li><a href="{{ url_for('assessment') }}" class="nav-link {% if request.endpoint == 'assessment' %}active{% endif %}">📝 Wellbeing Check</a></li>
+          <li><a href="{{ url_for('ai_companion') }}" class="nav-link {% if request.endpoint == 'ai_companion' %}active{% endif %}">💬 AI Companion</a></li>
+          <li><a href="{{ url_for('insights') }}" class="nav-link {% if request.endpoint == 'insights' %}active{% endif %}">📈 Insights</a></li>
+          <li><a href="{{ url_for('professionals') }}" class="nav-link {% if request.endpoint in ['professionals', 'doctors'] %}active{% endif %}">🩺 Doctors & Support</a></li>
+          <li><a href="{{ url_for('appointments') }}" class="nav-link {% if request.endpoint == 'appointments' %}active{% endif %}">📅 Appointments</a></li>
+          <li><a href="{{ url_for('profile') }}" class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}">⚙️ Profile</a></li>
+          <li>
+            <div class="nav-user-badge">
+              <span class="nav-user-avatar">{{ current_user['name'][0] | upper }}</span>
+              <span>{{ current_user['name'].split()[0] }}</span>
+            </div>
+          </li>
+          <li><a href="{{ url_for('logout') }}" class="btn btn-sm btn-secondary" style="margin-left: 0.4rem;">Logout</a></li>
+        {% else %}
+          <li><a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+          <li><a href="{{ url_for('login') }}" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">Sign In</a></li>
+          <li><a href="{{ url_for('signup') }}" class="btn btn-sm btn-primary">Create Account</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    
+    <!-- Flash Notifications -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <div>{{ message }}</div>
+              <button class="alert-close" aria-label="Close message">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Medical Non-Diagnostic Disclaimer Banner -->
+    <div class="disclaimer-banner">
+      <span class="disclaimer-icon">ℹ️</span>
+      <div>
+        <strong>Notice:</strong> {{ medical_disclaimer }}
+      </div>
+    </div>
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">MINDMED • AI-Powered Wellbeing & Early-Awareness</div>
+      <p class="footer-disclaimer">
+        MindMED provides non-diagnostic wellbeing screening, personal baseline tracking, and supportive AI dialogue. 
+        Screening results and pattern indicators do not constitute a medical diagnosis. If you are experiencing acute distress, 
+        please consult a certified medical doctor or reach out to emergency mental health helplines immediately.
+      </p>
+      <ul class="footer-links">
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('assessment') if current_user else url_for('signup') }}">Wellbeing Screening</a></li>
+        <li><a href="{{ url_for('ai_companion') if current_user else url_for('login') }}">AI Companion</a></li>
+        <li><a href="{{ url_for('insights') if current_user else url_for('login') }}">Insights & Timeline</a></li>
+        <li><a href="{{ url_for('professionals') if current_user else url_for('login') }}">Doctors & Support</a></li>
+        <li><a href="{{ url_for('profile') if current_user else url_for('login') }}">Privacy & Consent</a></li>
+      </ul>
+      <div style="font-size: 0.78rem; color: var(--slate-400); margin-top: 0.4rem;">
+        &copy; 2026 MINDMED Platform. Built for Early Awareness.
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

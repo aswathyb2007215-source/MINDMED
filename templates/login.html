@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — MINDMED</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+
+  <div class="auth-wrapper">
+    <div class="auth-top-bar" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 1.5rem;">
+      <a href="{{ url_for('index') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+        ← Back to Home
+      </a>
+    </div>
+    <div class="auth-container">
+      
+      <!-- Brand & Tagline Showcase Hero -->
+      <div class="auth-hero">
+        <div class="auth-brand">
+          <div class="auth-brand-icon">M</div>
+          <div class="auth-brand-name">MINDMED</div>
+        </div>
+
+        <div class="auth-hero-content">
+          <h1 class="auth-tagline">Talk.<br>Understand.<br>Detect.<br>Connect.</h1>
+          <p class="auth-desc">
+            An AI-powered personalized wellbeing and early-awareness platform designed to detect meaningful shifts before burnout sets in.
+          </p>
+
+          <div class="auth-pillars">
+            <div class="pillar-item">
+              <span class="pillar-badge">1</span>
+              <span><strong>Talk:</strong> AI companion with safe, supportive dialogue</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-badge">2</span>
+              <span><strong>Understand:</strong> Multi-dimensional screening assessments</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-badge">3</span>
+              <span><strong>Detect:</strong> Personal baseline & early pattern alerts</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-badge">4</span>
+              <span><strong>Connect:</strong> Verified healthcare specialists & appointments</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-hero-footer">
+          🔒 Private & Confidential. Non-diagnostic screening platform.
+        </div>
+      </div>
+
+      <!-- Login Form Column -->
+      <div class="auth-form-column">
+        <div class="auth-form-header">
+          <h2>Welcome Back</h2>
+          <p>Please enter your credentials to access your personal dashboard.</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-container" style="margin-bottom: 1.2rem;">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                  <div>{{ message }}</div>
+                  <button class="alert-close">&times;</button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('login') }}" method="POST" id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" value="{{ email or '' }}" required autofocus>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-btn-submit">
+            Sign In to MINDMED
+          </button>
+        </form>
+
+        <div class="auth-switch">
+          Don't have an account yet? <a href="{{ url_for('signup') }}">Create Account</a>
+        </div>
+
+        <!-- Demo Account Helper for Judges -->
+        <div class="demo-account-card">
+          <div class="demo-account-header">
+            <span>Demo Account For Testing</span>
+            <span class="demo-badge">PRE-LOADED</span>
+          </div>
+          <div>Email: <code>demo@mindmed.health</code></div>
+          <div>Password: <code>mindmed123</code></div>
+          <button type="button" id="fillDemoBtn" class="demo-fill-btn">Click to Auto-Fill Demo User</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    // If URL has ?demo=true, auto-fill and focus
+    if (window.location.search.includes('demo=true')) {
+      const emailField = document.getElementById('email');
+      const passField = document.getElementById('password');
+      if (emailField && passField) {
+        emailField.value = 'demo@mindmed.health';
+        passField.value = 'mindmed123';
+      }
+    }
+  </script>
+</body>
+</html>

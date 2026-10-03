@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Doctors & Crisis Support Hub — MINDMED{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem;">
+        <span class="badge badge-low">Verified Specialist Network</span>
+        <span class="badge badge-neutral">100% Patient Consent Control</span>
+      </div>
+      <h1>Doctors & Support Network</h1>
+      <p>
+        Connect with licensed psychiatrists, clinical psychologists, and wellbeing counselors. 
+        You decide whether to share your non-diagnostic MindMED screening summary with your provider.
+      </p>
+    </div>
+    <div>
+      <a href="{{ url_for('summary') }}" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+        <span>📋 Preview Provider Summary</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- CRISIS & EMERGENCY SUPPORT ACCORDION / CARDS -->
+<div class="crisis-hub-card glass-panel" style="margin-bottom: 2.2rem; padding: 1.6rem; border-radius: var(--radius-lg); background: #fff1f2; border: 1px solid #fecdd3;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+    <div style="display: flex; align-items: center; gap: 0.6rem;">
+      <span style="font-size: 1.4rem;">🚨</span>
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: #9f1239; margin: 0;">
+        Immediate 24/7 Crisis & Emergency Support
+      </h3>
+    </div>
+    <span class="badge" style="background: #f43f5e; color: white; font-size: 0.72rem;">Free & Confidential</span>
+  </div>
+
+  <p style="font-size: 0.86rem; color: #881337; margin-bottom: 1.2rem; line-height: 1.5;">
+    If you or someone you know is in acute distress or experiencing thoughts of self-harm, please reach out to these toll-free, confidential resources immediately:
+  </p>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: var(--radius-md); padding: 1rem;">
+      <strong style="display: block; font-size: 0.9rem; color: #9f1239; margin-bottom: 0.2rem;">Tele-MANAS (India)</strong>
+      <div style="font-size: 1.2rem; font-weight: 800; color: #be123c; font-family: 'Plus Jakarta Sans', sans-serif;">14416</div>
+      <div style="font-size: 0.78rem; color: var(--slate-500); margin-top: 0.2rem;">Or 1800-891-4416 • 24/7 Toll-Free</div>
+    </div>
+
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: var(--radius-md); padding: 1rem;">
+      <strong style="display: block; font-size: 0.9rem; color: #9f1239; margin-bottom: 0.2rem;">KIRAN Helpline</strong>
+      <div style="font-size: 1.2rem; font-weight: 800; color: #be123c; font-family: 'Plus Jakarta Sans', sans-serif;">1800-599-0019</div>
+      <div style="font-size: 0.78rem; color: var(--slate-500); margin-top: 0.2rem;">Govt. of India Mental Health Helpline</div>
+    </div>
+
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: var(--radius-md); padding: 1rem;">
+      <strong style="display: block; font-size: 0.9rem; color: #9f1239; margin-bottom: 0.2rem;">988 Lifeline (US & Global)</strong>
+      <div style="font-size: 1.2rem; font-weight: 800; color: #be123c; font-family: 'Plus Jakarta Sans', sans-serif;">Call or Text 988</div>
+      <div style="font-size: 0.78rem; color: var(--slate-500); margin-top: 0.2rem;">24/7 Suicide & Crisis Lifeline</div>
+    </div>
+
+    <div style="background: white; border: 1px solid #fecdd3; border-radius: var(--radius-md); padding: 1rem;">
+      <strong style="display: block; font-size: 0.9rem; color: #9f1239; margin-bottom: 0.2rem;">Emergency Services</strong>
+      <div style="font-size: 1.2rem; font-weight: 800; color: #be123c; font-family: 'Plus Jakarta Sans', sans-serif;">112 (India/EU) / 911 (US)</div>
+      <div style="font-size: 0.78rem; color: var(--slate-500); margin-top: 0.2rem;">Immediate paramedic & police assistance</div>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<div style="background: #ffffff; border: 1px solid var(--slate-200); border-radius: var(--radius-md); padding: 1rem 1.4rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+  <form action="{{ url_for('professionals') }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+    <div style="flex: 1; min-width: 240px;">
+      <input 
+        type="text" 
+        name="search" 
+        class="form-input" 
+        placeholder="Search by doctor name, city, or specialization..." 
+        value="{{ search_query }}"
+      >
+    </div>
+
+    <div style="min-width: 200px;">
+      <select name="specialty" class="form-select">
+        <option value="">All Specializations</option>
+        <option value="Mental Health" {% if specialty_filter == 'Mental Health' %}selected{% endif %}>Mental Health & CBT</option>
+        <option value="Psychologist" {% if specialty_filter == 'Psychologist' %}selected{% endif %}>Clinical Psychologists</option>
+        <option value="Psychiatrist" {% if specialty_filter == 'Psychiatrist' %}selected{% endif %}>Consultant Psychiatrists</option>
+        <option value="Counselor" {% if specialty_filter == 'Counselor' %}selected{% endif %}>Wellbeing Counselors</option>
+        <option value="Neuropsychologist" {% if specialty_filter == 'Neuropsychologist' %}selected{% endif %}>Neuropsychologists</option>
+        <option value="Telehealth" {% if specialty_filter == 'Telehealth' %}selected{% endif %}>Telehealth / Global</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+    {% if search_query or specialty_filter %}
+      <a href="{{ url_for('professionals') }}" class="btn btn-secondary">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<!-- Professionals Grid -->
+<div class="prof-grid">
+  {% for prof in professionals %}
+    <div class="prof-card hover-lift">
+      <div>
+        <div class="prof-header">
+          <div class="prof-avatar" style="background-color: {{ prof['avatar_color'] or 'var(--primary)' }};">
+            {{ prof['name'].split()[1][0] if prof['name'].split()|length > 1 else 'D' }}
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <h3 class="prof-name">{{ prof['name'] }}</h3>
+              <span title="Verified Healthcare Specialist" style="color: #0d9488; font-size: 0.9rem;">✓</span>
+            </div>
+            <div class="prof-specialty">{{ prof['specialization'] }}</div>
+          </div>
+        </div>
+
+        <div class="prof-meta">
+          <div class="prof-meta-item">
+            <span>⭐</span>
+            <span><strong>{{ prof['rating'] }}</strong> rating • {{ prof['experience'] }}</span>
+          </div>
+          <div class="prof-meta-item">
+            <span>📍</span>
+            <span>{{ prof['location'] }}</span>
+          </div>
+          <div class="prof-meta-item">
+            <span>🕒</span>
+            <span>{{ prof['availability'] }}</span>
+          </div>
+        </div>
+
+        <p class="prof-bio">
+          {{ prof['bio'] }}
+        </p>
+      </div>
+
+      <div class="prof-actions">
+        <a href="{{ url_for('appointments', prof_id=prof['id']) }}" class="btn btn-primary" style="flex: 1;">
+          📅 Book Consultation
+        </a>
+      </div>
+    </div>
+  {% else %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--slate-200);">
+      <p style="color: var(--slate-500); font-size: 1.1rem; margin-bottom: 1rem;">No healthcare professionals match your current filter.</p>
+      <a href="{{ url_for('professionals') }}" class="btn btn-outline">Reset Filter</a>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

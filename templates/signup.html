@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — MINDMED</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body>
+
+  <div class="auth-wrapper">
+    <div class="auth-top-bar" style="max-width: 1000px; margin: 1.5rem auto 0; padding: 0 1.5rem;">
+      <a href="{{ url_for('index') }}" style="color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+        ← Back to Home
+      </a>
+    </div>
+    <div class="auth-container auth-signup">
+      
+      <!-- Brand & Information Hero -->
+      <div class="auth-hero">
+        <div class="auth-brand">
+          <div class="auth-brand-icon">M</div>
+          <div class="auth-brand-name">MINDMED</div>
+        </div>
+
+        <div class="auth-hero-content">
+          <h1 class="auth-tagline">Your Early-Awareness Wellbeing Partner.</h1>
+          <p class="auth-desc">
+            Join MINDMED to track your unique personal baseline, detect early patterns of stress and burnout, and access safe guidance.
+          </p>
+
+          <div class="auth-pillars">
+            <div class="pillar-item">
+              <span class="pillar-badge">✓</span>
+              <span>100% User-controlled consent & data privacy</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-badge">✓</span>
+              <span>Personalized baseline comparison matrix</span>
+            </div>
+            <div class="pillar-item">
+              <span class="pillar-badge">✓</span>
+              <span>Direct access to certified mental health specialists</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-hero-footer">
+          ⚕️ MINDMED provides non-diagnostic screening and pattern observation.
+        </div>
+      </div>
+
+      <!-- Signup Form Column -->
+      <div class="auth-form-column">
+        <div class="auth-form-header">
+          <h2>Create Your Account</h2>
+          <p>Start your personal wellbeing journey in less than two minutes.</p>
+        </div>
+
+        <!-- Flash Notifications -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                <div>{{ message }}</div>
+                <button class="alert-close">&times;</button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('signup') }}" method="POST">
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name *</label>
+            <input type="text" id="name" name="name" class="form-input" placeholder="e.g. Aswathy Kumar" value="{{ form_data.name or '' }}" required autofocus>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address *</label>
+            <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" value="{{ form_data.email or '' }}" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="password">Password *</label>
+              <input type="password" id="password" name="password" class="form-input" placeholder="At least 6 characters" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="confirm_password">Confirm Password *</label>
+              <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Re-enter password" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="age">Age</label>
+              <input type="number" id="age" name="age" class="form-input" placeholder="e.g. 24" min="10" max="120" value="{{ form_data.age or '' }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="gender">Gender</label>
+              <select id="gender" name="gender" class="form-select">
+                <option value="" disabled {% if not form_data.gender %}selected{% endif %}>Select</option>
+                <option value="Female" {% if form_data.gender == 'Female' %}selected{% endif %}>Female</option>
+                <option value="Male" {% if form_data.gender == 'Male' %}selected{% endif %}>Male</option>
+                <option value="Non-binary" {% if form_data.gender == 'Non-binary' %}selected{% endif %}>Non-binary</option>
+                <option value="Prefer not to say" {% if form_data.gender == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="location">Location / City</label>
+            <input type="text" id="location" name="location" class="form-input" placeholder="e.g. Kochi, Kerala" value="{{ form_data.location or '' }}">
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-btn-submit">
+            Register & Get Started
+          </button>
+        </form>
+
+        <div class="auth-switch">
+          Already have an account? <a href="{{ url_for('login') }}">Sign In</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+{% extends "base.html" %}
+
+{% block title %}Wellbeing Check — MINDMED{% endblock %}
+
+{% block content %}
+
+<div class="assessment-container">
+  <div class="page-header" style="text-align: center; max-width: 680px; margin: 0 auto 2rem auto;">
+    <h1>Wellbeing Check-In</h1>
+    <p>
+      Complete this multi-dimensional screening to calibrate your personal baseline and identify subtle patterns in your stress, sleep, and emotional vitality.
+    </p>
+  </div>
+
+  <!-- Progress Bar -->
+  <div style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; font-size: 0.84rem; color: var(--slate-600); margin-bottom: 0.4rem; font-weight: 600;">
+      <span>Check-In Completion</span>
+      <span id="progressText">0 of 13 questions answered (0%)</span>
+    </div>
+    <div class="progress-track" style="height: 10px;">
+      <div id="assessmentProgress" class="progress-fill fill-teal" style="width: 0%;"></div>
+    </div>
+  </div>
+
+  <form id="assessmentForm" action="{{ url_for('assessment') }}" method="POST">
+
+    <!-- Section 1: Emotional & Core Wellbeing -->
+    <div class="assessment-section">
+      <div class="section-header" style="margin-bottom: 0.5rem;">
+        <h2 class="section-title">
+          <span class="section-badge-num">1</span>
+          Emotional & Core Wellbeing
+        </h2>
+        <span class="badge badge-neutral">Core Metrics</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--slate-500); margin-bottom: 1.2rem;">
+        Reflect on your general experience over the last 24–48 hours.
+      </p>
+
+      <!-- Mood Question -->
+      <div class="question-block">
+        <div class="question-title">Overall Emotional Tone & Mood</div>
+        <div class="question-subtext">How would you describe your general emotional state recently?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="mood" value="1" required>
+            <div class="scale-label">
+              <span class="scale-number">1</span>
+              <span class="scale-text">Very Low</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="mood" value="2">
+            <div class="scale-label">
+              <span class="scale-number">2</span>
+              <span class="scale-text">Somewhat Down</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="mood" value="3" checked>
+            <div class="scale-label">
+              <span class="scale-number">3</span>
+              <span class="scale-text">Neutral / Balanced</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="mood" value="4">
+            <div class="scale-label">
+              <span class="scale-number">4</span>
+              <span class="scale-text">Positive & Good</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="mood" value="5">
+            <div class="scale-label">
+              <span class="scale-number">5</span>
+              <span class="scale-text">Flourishing</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Stress Question -->
+      <div class="question-block">
+        <div class="question-title">Perceived Stress Load</div>
+        <div class="question-subtext">To what extent are daily demands, tasks, or pressures feeling heavy?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="stress" value="1" required>
+            <div class="scale-label">
+              <span class="scale-number">1</span>
+              <span class="scale-text">Minimal Stress</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="stress" value="2">
+            <div class="scale-label">
+              <span class="scale-number">2</span>
+              <span class="scale-text">Mild / Manageable</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="stress" value="3" checked>
+            <div class="scale-label">
+              <span class="scale-number">3</span>
+              <span class="scale-text">Moderate Tension</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="stress" value="4">
+            <div class="scale-label">
+              <span class="scale-number">4</span>
+              <span class="scale-text">Elevated Strain</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="stress" value="5">
+            <div class="scale-label">
+              <span class="scale-number">5</span>
+              <span class="scale-text">Overwhelming</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Energy Question -->
+      <div class="question-block">
+        <div class="question-title">Daily Energy & Stamina</div>
+        <div class="question-subtext">How would you rate your physical and cognitive battery level?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="energy" value="1" required>
+            <div class="scale-label">
+              <span class="scale-number">1</span>
+              <span class="scale-text">Completely Drained</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="energy" value="2">
+            <div class="scale-label">
+              <span class="scale-number">2</span>
+              <span class="scale-text">Low Energy</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="energy" value="3" checked>
+            <div class="scale-label">
+              <span class="scale-number">3</span>
+              <span class="scale-text">Moderate Stamina</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="energy" value="4">
+            <div class="scale-label">
+              <span class="scale-number">4</span>
+              <span class="scale-text">Good Vitality</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="energy" value="5">
+            <div class="scale-label">
+              <span class="scale-number">5</span>
+              <span class="scale-text">Abundant Energy</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Sleep Question -->
+      <div class="question-block">
+        <div class="question-title">Sleep Quality & Restfulness</div>
+        <div class="question-subtext">How refreshing and restorative was your sleep over recent nights?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="sleep" value="1" required>
+            <div class="scale-label">
+              <span class="scale-number">1</span>
+              <span class="scale-text">Severely Disrupted</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="sleep" value="2">
+            <div class="scale-label">
+              <span class="scale-number">2</span>
+              <span class="scale-text">Poor / Restless</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="sleep" value="3" checked>
+            <div class="scale-label">
+              <span class="scale-number">3</span>
+              <span class="scale-text">Fair / Average</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="sleep" value="4">
+            <div class="scale-label">
+              <span class="scale-number">4</span>
+              <span class="scale-text">Good Rest</span>
+            </div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="sleep" value="5">
+            <div class="scale-label">
+              <span class="scale-number">5</span>
+              <span class="scale-text">Deeply Restorative</span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Anxiety-Risk Screening -->
+    <div class="assessment-section">
+      <div class="section-header" style="margin-bottom: 0.5rem;">
+        <h2 class="section-title">
+          <span class="section-badge-num">2</span>
+          Anxiety-Risk Screening
+        </h2>
+        <span class="badge badge-neutral">Screening Only</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--slate-500); margin-bottom: 1.2rem;">
+        Non-diagnostic screening for nervous tension and cognitive worry.
+      </p>
+
+      <div class="question-block">
+        <div class="question-title">1. Feeling nervous, anxious, or on edge</div>
+        <div class="question-subtext">How often have you felt restless or on edge over the past several days?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="anx_nervous" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">Not at all</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="anx_nervous" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Several days</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="anx_nervous" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">More than half</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="anx_nervous" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Frequent</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="anx_nervous" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">Nearly every day</span></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="question-block">
+        <div class="question-title">2. Difficulty stopping or controlling worry</div>
+        <div class="question-subtext">Did you find it hard to disengage from repetitive or racing thoughts?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="anx_worry" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">Not at all</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="anx_worry" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Occasionally</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="anx_worry" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">Moderate difficulty</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="anx_worry" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Often difficult</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="anx_worry" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">Almost constantly</span></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Depression-Risk Screening -->
+    <div class="assessment-section">
+      <div class="section-header" style="margin-bottom: 0.5rem;">
+        <h2 class="section-title">
+          <span class="section-badge-num">3</span>
+          Depression-Risk Screening
+        </h2>
+        <span class="badge badge-neutral">Screening Only — Not a Medical Diagnosis</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--slate-500); margin-bottom: 1.2rem;">
+        Observing patterns of motivation, pleasure, and emotional perspective.
+      </p>
+
+      <div class="question-block">
+        <div class="question-title">1. Little interest or pleasure in doing things</div>
+        <div class="question-subtext">Have you experienced less enjoyment in your regular activities or hobbies?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="dep_pleasure" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">Not at all</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="dep_pleasure" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Slight dip</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="dep_pleasure" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">Moderate reduction</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="dep_pleasure" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Marked reduction</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="dep_pleasure" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">Almost no pleasure</span></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="question-block">
+        <div class="question-title">2. Feeling down, depressed, or discouraged</div>
+        <div class="question-subtext">How frequently have you felt emotionally disheartened or heavy?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="dep_hopeless" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">Never</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="dep_hopeless" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Rarely</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="dep_hopeless" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">Sometimes</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="dep_hopeless" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Frequently</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="dep_hopeless" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">Nearly every day</span></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Burnout Screening -->
+    <div class="assessment-section">
+      <div class="section-header" style="margin-bottom: 0.5rem;">
+        <h2 class="section-title">
+          <span class="section-badge-num">4</span>
+          Burnout & Exhaustion Screening
+        </h2>
+        <span class="badge badge-neutral">Workload & Recovery Pattern</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--slate-500); margin-bottom: 1.2rem;">
+        Evaluating physical exhaustion, mental recovery capacity, and motivation drain.
+      </p>
+
+      <div class="question-block">
+        <div class="question-title">1. Feeling emotionally or physically exhausted by work/study</div>
+        <div class="question-subtext">Do you start your day feeling depleted before you even begin?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="burn_exhaustion" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">Rarely</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_exhaustion" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Occasional</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_exhaustion" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">Moderate</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_exhaustion" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Frequent</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_exhaustion" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">Severe</span></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="question-block">
+        <div class="question-title">2. Motivation and enthusiasm drain</div>
+        <div class="question-subtext">Are you experiencing cynicism or feeling disconnected from your goals?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="burn_motivation" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">High Drive</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_motivation" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Normal</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_motivation" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">Mild Cynicism</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_motivation" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Notable Detachment</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_motivation" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">Complete Apathy</span></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="question-block">
+        <div class="question-title">3. Recovery ability during weekends or off-hours</div>
+        <div class="question-subtext">Do evenings and rest days actually restore your capacity, or do you remain tired?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="burn_recovery" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">Restores fully</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_recovery" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Mostly restores</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_recovery" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">Partial restore</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_recovery" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Hardly restores</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="burn_recovery" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">No recovery felt</span></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5: Basic Health-Risk Screening -->
+    <div class="assessment-section">
+      <div class="section-header" style="margin-bottom: 0.5rem;">
+        <h2 class="section-title">
+          <span class="section-badge-num">5</span>
+          Basic Health & Somatic Indicator
+        </h2>
+        <span class="badge badge-neutral">Lifestyle & Somatic</span>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--slate-500); margin-bottom: 1.2rem;">
+        General non-diagnostic questions about physical fatigue and daily rhythm balance.
+      </p>
+
+      <div class="question-block">
+        <div class="question-title">1. Physical tiredness or heavy bodily fatigue</div>
+        <div class="question-subtext">Are you feeling muscle tension, headaches, or unexplainable physical tiredness?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="hlth_fatigue" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">None</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="hlth_fatigue" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Occasional</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="hlth_fatigue" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">Moderate</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="hlth_fatigue" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Noticeable</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="hlth_fatigue" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">Persistent</span></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="question-block">
+        <div class="question-title">2. Balance of physical activity & fresh air</div>
+        <div class="question-subtext">Have you had opportunities for light walking, moving, or outdoor time?</div>
+        <div class="scale-options">
+          <label class="scale-option">
+            <input type="radio" name="hlth_activity" value="1" required>
+            <div class="scale-label"><span class="scale-number">1</span><span class="scale-text">Good activity</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="hlth_activity" value="2" checked>
+            <div class="scale-label"><span class="scale-number">2</span><span class="scale-text">Slightly sedentary</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="hlth_activity" value="3">
+            <div class="scale-label"><span class="scale-number">3</span><span class="scale-text">Mostly indoor</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="hlth_activity" value="4">
+            <div class="scale-label"><span class="scale-number">4</span><span class="scale-text">Sedentary</span></div>
+          </label>
+          <label class="scale-option">
+            <input type="radio" name="hlth_activity" value="5">
+            <div class="scale-label"><span class="scale-number">5</span><span class="scale-text">Severely limited</span></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Bar -->
+    <div class="assessment-submit-bar">
+      <div>
+        <div style="font-weight: 700; color: var(--slate-800);">Ready to analyze?</div>
+        <div style="font-size: 0.8rem; color: var(--slate-500);">Your results will calculate your personal baseline and pattern trends.</div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg">
+        Submit Wellbeing Check ➔
+      </button>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/assessment.js') }}"></script>
+{% endblock %}
